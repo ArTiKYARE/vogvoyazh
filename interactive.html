@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR-интерактив — ВОГВОЯЖ</title>
+<meta name="description" content="Экстренный вылет из зала: выбери настроение и получи посадочный талон в розовую мечту. Страница для сканирования QR.">
+<meta name="theme-color" content="#FF2E93">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,600&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<!-- html2canvas для сохранения талона в PNG (CDN). Если недоступен — fallback на печать -->
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ---------- Полноэкранная страница интерактива ---------- */
+.interactive-page{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;padding-bottom:2rem}
+.interactive-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 0}
+.interactive-body{flex:1;width:min(680px,94%);margin-inline:auto;display:flex;flex-direction:column;justify-content:center;padding-block:1rem}
+.interactive-card{
+  border-radius:var(--radius);padding:clamp(1.4rem,4vw,2.2rem);
+  background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(18px);
+  box-shadow:var(--shadow-pink);animation:fadeUp .7s cubic-bezier(.22,1,.36,1) both;
+}
+.interactive-card h1{font-size:clamp(1.5rem,5vw,2rem);line-height:1.15;margin-top:.7rem}
+#ticketStep{animation:zoomIn .45s cubic-bezier(.34,1.56,.64,1) both}
+.ticket-actions{display:grid;gap:.7rem;grid-template-columns:1fr 1fr;margin-top:1.3rem}
+@media(max-width:520px){.ticket-actions{grid-template-columns:1fr}}
+.ticket-actions .btn{width:100%}
+.field{margin-bottom:0}
+</style>
+</head>
+<body>
+<div class="interactive-page container">
+
+  <header class="interactive-head no-print">
+    <a class="logo" href="index.html"><span class="spark"><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></span> ВОГВОЯЖ</a>
+    <a class="btn btn-ghost btn-sm ripple-host" href="index.html#board">Табло</a>
+  </header>
+
+  <main class="interactive-body">
+
+    <!-- Шаг 1–2: имя + настроение -->
+    <section id="moodStep" class="interactive-card" aria-label="Выбор настроения">
+      <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg> Экстренный вылет из зала</span>
+      <h1>Не покупай билет. Выбери настроение.</h1>
+      <div class="steps" style="margin-top:1.2rem">
+        <span class="step-dot active" id="dotName">1 · Имя</span>
+        <span class="step-dot" id="dotMood">2 · Настроение</span>
+        <span class="step-dot" id="dotTicket">3 · Талон</span>
+      </div>
+
+      <div class="field" style="margin:1.2rem 0">
+        <label for="guestName">Как вас звать на борту?</label>
+        <input id="guestName" type="text" placeholder="Например, Мечтательница" autocomplete="off" maxlength="24">
+        <span class="tiny-note" style="display:block;margin-top:.4em">Имя необязательное. Без него вы — тайна с именем «Гость Заката».</span>
+      </div>
+
+      <p style="font-weight:800;margin-bottom:.7rem">Выбери настроение для вылета:</p>
+      <div class="mood-grid" id="moodGrid"><!-- кнопки настроений генерируются --></div>
+      <p class="tiny-note" style="margin-top:1rem">Данные никуда не отправляются. Талон живёт только в вашем браузере.</p>
+    </section>
+
+    <!-- Шаг 3: талон -->
+    <section id="ticketStep" class="interactive-card" hidden aria-label="Посадочный талон">
+      <div class="steps">
+        <span class="step-dot">1 · Имя</span>
+        <span class="step-dot">2 · Настроение</span>
+        <span class="step-dot active">3 · Талон</span>
+      </div>
+      <div id="boardingPassBox"><!-- посадочный талон рендерится сюда --></div>
+
+      <div class="ticket-actions no-print">
+        <button class="btn btn-primary ripple-host shine" id="saveTicket">Сохранить талон</button>
+        <button class="btn btn-ghost ripple-host" id="printTicket">Распечатать</button>
+        <button class="btn btn-ghost ripple-host" id="againTicket">Ещё один закат</button>
+        <button class="btn btn-outline ripple-host" id="sendBoard">На общее табло</button>
+      </div>
+      <p class="tiny-note" style="margin-top:.9rem">Талон хранится только в вашем браузере. Никакой регистрации, email и оплаты — мы же не настоящая авиакасса.</p>
+    </section>
+
+  </main>
+
+  <footer class="no-print" style="text-align:center;padding-top:1.4rem">
+    <p class="tiny-note">© Вогвояж, 2026. Все взлёты вымышлены. Все совпадения по настроению — случайны.</p>
+  </footer>
+</div>
+
+<div class="toast no-print" id="toast" role="status" aria-live="polite"><span id="toastText"></span></div>
+
+<script src="shared.js"></script>
+<script>
+"use strict";
+
+/* ---------- Кнопки настроений ---------- */
+const moodGrid = $("#moodGrid");
+Object.entries(MOODS).forEach(([name, m]) => {
+  const b = document.createElement("button");
+  b.className = "mood-btn"; b.type = "button";
+  b.innerHTML = `${m.icon}<span>${name}</span>`;
+  b.addEventListener("click", () => showTicket(name));
+  moodGrid.appendChild(b);
+});
+
+function setSteps(active){
+  ["#dotName","#dotMood","#dotTicket"].forEach((sel,i) => {
+    $(sel).classList.toggle("active", i === active);
+  });
+}
+
+function showTicket(moodName){
+  generateTicket(moodName);
+  Stats.inc("tickets");
+  $("#moodStep").hidden = true;
+  $("#ticketStep").hidden = false;
+  setSteps(2);
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* Подсветка шага «Настроение» при фокусе имени — лёгкая микродинамика */
+$("#guestName").addEventListener("focus", () => setSteps(1));
+
+/* ---------- Сохранить талон (html2canvas + fallback на печать) ---------- */
+$("#saveTicket").addEventListener("click", async () => {
+  const card = $("#bpCard");
+  if (!card) return;
+  try {
+    if (typeof html2canvas !== "function") throw new Error("html2canvas недоступен");
+    const canvas = await html2canvas(card, {backgroundColor:null, scale:2});
+    const a = document.createElement("a");
+    a.download = "vogvoyazh-boarding-pass.png";
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+    showToast("Талон сохранён. Красота должна быть при себе.");
+  } catch(err) {
+    showToast("Сохранение в картинку недоступно — открываю печать.");
+    setTimeout(() => window.print(), 900);
+  }
+});
+
+/* ---------- Печать / ещё один закат / табло ---------- */
+$("#printTicket").addEventListener("click", () => window.print());
+
+$("#againTicket").addEventListener("click", () => {
+  $("#ticketStep").hidden = true;
+  $("#moodStep").hidden = false;
+  setSteps(0);
+});
+
+function capWord(w){ return w.charAt(0) + w.slice(1).toLowerCase(); }
+
+$("#sendBoard").addEventListener("click", () => {
+  if (!currentTicket) return;
+  saveFlight({
+    name: currentTicket.name === "ГОСТЬ ЗАКАТА" ? "Гость Заката" : capWord(currentTicket.name),
+    dest: currentTicket.dest, mood: currentTicket.mood, verb: "улетела в"
+  });
+  showToast("Вы на общем табло! Вас видят все, кто красиво опаздывает.");
+});
+
+/* Синхронизация статистики между вкладками */
+window.addEventListener("storage", e => { if (e.key === STATS_KEY){ Stats.load(); renderStats(); } });
+
+/* Старт: фокус на имени не перехватываем — на мобильных клавиатура мешает обзору */
+renderStats();
+</script>
+</body>
+</html>

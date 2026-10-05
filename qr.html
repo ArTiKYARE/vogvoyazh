@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор QR — ВОГВОЯЖ</title>
+<meta name="description" content="Сгенерируйте настоящий QR-код на ссылку интерактива Вогвояж: для печати, вывода на экран и показа в зале.">
+<meta name="theme-color" content="#FF2E93">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,600&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<!-- Библиотека генерации настоящих QR-кодов (Canvas). Если CDN недоступен — показываем понятную ошибку -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ---------- Страница генератора QR ---------- */
+.subhero{padding:clamp(2.5rem,7vw,4.5rem) 0 1.8rem;text-align:center}
+.subhero .h-section{margin-top:.9rem}
+.subhero p{margin-top:.8rem}
+
+.qr-page-grid{display:grid;gap:1.6rem;margin-bottom:3rem}
+@media(min-width:900px){.qr-page-grid{grid-template-columns:1fr 1fr;align-items:start}}
+
+.qr-panel{
+  background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);
+  box-shadow:var(--shadow-pink);backdrop-filter:blur(18px);padding:clamp(1.4rem,3.5vw,2.4rem);
+  animation:fadeUp .8s cubic-bezier(.22,1,.36,1) both;
+}
+.qr-panel h2{font-size:1.5rem;margin-bottom:1rem}
+.qr-panel .field{margin-bottom:1.1rem}
+
+.preset-chips{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.2rem}
+.preset-chip{
+  font-size:.8rem;font-weight:800;letter-spacing:.04em;color:var(--crimson);
+  background:rgba(255,255,255,.75);border:1.5px solid rgba(255,143,190,.55);
+  border-radius:999px;padding:.5em 1.1em;transition:all .25s;
+}
+.preset-chip:hover{background:var(--powder);transform:translateY(-2px)}
+.preset-chip.active{background:linear-gradient(120deg,var(--hot),var(--neon));color:#fff;border-color:transparent}
+
+.qr-preview-frame{
+  background:#fff;padding:clamp(16px,3vw,28px);border-radius:28px;width:max-content;margin-inline:auto;
+  box-shadow:0 26px 64px -18px rgba(42,15,29,.35);border:2px solid var(--powder);
+  transition:transform .3s;animation:zoomIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.qr-preview-frame:hover{transform:scale(1.02) rotate(.6deg)}
+.qr-preview-frame canvas{display:block;max-width:min(340px,66vw);height:auto !important;image-rendering:pixelated}
+.qr-caption{font-weight:800;color:var(--crimson);text-align:center;margin-top:1rem}
+.qr-subcaption{font-style:italic;color:rgba(42,15,29,.55);text-align:center;font-size:.85rem;margin-top:.3rem;word-break:break-all}
+
+.link-copy-row{display:flex;gap:.6rem;margin-top:1.4rem;flex-wrap:wrap}
+.link-copy-row input{
+  flex:1;min-width:220px;padding:.85em 1.1em;border-radius:16px;
+  border:1.5px solid rgba(255,143,190,.5);background:rgba(255,255,255,.75);font-size:.95rem;color:var(--ink);
+}
+.link-copy-row input:focus{outline:none;border-color:var(--hot);box-shadow:0 0 0 4px rgba(255,46,147,.15)}
+
+.size-row{display:flex;align-items:center;gap:1rem;margin-top:1.2rem}
+.size-row label{font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--crimson);white-space:nowrap}
+.qr-size-range{flex:1;accent-color:var(--hot)}
+.size-val{font-weight:800;min-width:64px;text-align:right}
+
+.qr-toggles{display:grid;gap:.7rem;margin-top:1.2rem}
+.switch{display:flex;align-items:center;gap:.7em;font-weight:700;font-size:.92rem;cursor:pointer}
+.switch input{width:20px;height:20px;accent-color:var(--hot);cursor:pointer}
+
+.qr-actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.5rem}
+.qr-error{color:var(--crimson);font-weight:800;margin-top:1rem;min-height:1.2em}
+
+.howto{list-style:none;display:grid;gap:.7rem;margin-top:.4rem}
+.howto li{display:flex;gap:.7em;align-items:flex-start;font-size:.95rem;color:rgba(42,15,29,.75)}
+.howto .ic{width:1.2em;height:1.2em;color:var(--hot);flex:none;margin-top:.15em}
+.howto code{background:var(--powder);border-radius:8px;padding:.1em .45em;font-size:.85em}
+</style>
+</head>
+<body>
+
+<header class="header no-print">
+  <div class="container header-inner">
+    <a class="logo" href="index.html"><span class="spark"><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></span> ВОГВОЯЖ</a>
+    <span class="spacer"></span>
+    <a class="btn btn-ghost btn-sm ripple-host" href="interactive.html">Интерактив</a>
+    <a class="btn btn-ghost btn-sm ripple-host" href="board.html">Табло</a>
+    <a class="btn btn-primary btn-sm ripple-host shine" href="index.html">На главную</a>
+  </div>
+</header>
+
+<main>
+<section class="subhero container">
+  <span class="kicker anim-fadeup"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg> Генератор QR</span>
+  <h1 class="h-section anim-fadeup d1">Настоящий QR для экстренного вылета</h1>
+  <p class="muted anim-fadeup d2" style="max-width:640px;margin-inline:auto">Укажите ссылку на интерактив (или любую свою), настройте размер и скачайте PNG/SVG — можно печатать таблички, стойки и приглашения.</p>
+</section>
+
+<section class="container">
+  <div class="qr-page-grid">
+
+    <!-- Настройки -->
+    <div class="qr-panel">
+      <h2>1 · Куда летит код</h2>
+      <div class="preset-chips" id="presetChips">
+        <button class="preset-chip active" data-url="">Интерактив (эта страница сайта)</button>
+        <button class="preset-chip" data-url-append="?from=qr-print">Интерактив + метка «с QR»</button>
+        <button class="preset-chip" data-url="https://forms.gle/">Google-форма</button>
+        <button class="preset-chip" data-url="https://t.me/">Telegram</button>
+      </div>
+
+      <div class="field">
+        <label for="qrLink">Ссылка</label>
+        <input id="qrLink" type="url" placeholder="https://…" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="size-row">
+        <label for="qrSize">Размер</label>
+        <input class="qr-size-range" id="qrSize" type="range" min="180" max="1024" step="4" value="320">
+        <span class="size-val" id="qrSizeVal">320 px</span>
+      </div>
+
+      <div class="qr-toggles">
+        <label class="switch"><input type="checkbox" id="qrPink" checked> Розовый код (для красоты; чёрный — надёжнее для сканеров)</label>
+        <label class="switch"><input type="checkbox" id="qrFrame" checked> Белая рамка и отступы</label>
+      </div>
+
+      <div class="link-copy-row">
+        <input id="qrFinalLink" readonly aria-label="Итоговая ссылка QR">
+        <button class="btn btn-ghost ripple-host" id="copyLinkBtn">Копировать ссылку</button>
+      </div>
+
+      <div class="qr-actions">
+        <button class="btn btn-primary ripple-host shine" id="downloadPng">Скачать PNG</button>
+        <button class="btn btn-ghost ripple-host" id="downloadSvg">Скачать SVG</button>
+        <button class="btn btn-outline ripple-host" id="printQr">Распечатать</button>
+      </div>
+      <p class="qr-error" id="qrError" role="alert"></p>
+    </div>
+
+    <!-- Превью -->
+    <div class="qr-panel" style="text-align:center">
+      <h2 style="text-align:left">2 · Ваш вылет</h2>
+      <div class="qr-preview-frame" id="qrPreview"><!-- canvas появляется здесь --></div>
+      <p class="qr-caption">Наведи камеру. Улети красиво.</p>
+      <p class="qr-subcaption" id="qrLinkEcho"></p>
+
+      <ul class="howto" style="text-align:left;margin-top:1.6rem">
+        <li><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Скачайте PNG в нужном размере — для печати A4 хватит 800–1024 px.</li>
+        <li><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> SVG масштабируется без потерь — идеален для полиграфии.</li>
+        <li><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Для экрана ведущего: выведите эту страницу на проектор или распечатайте кнопкой «Распечатать».</li>
+        <li><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Розовый цвет красивее, но перед печатью проверьте сканирование с телефона.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+</main>
+
+<footer class="footer no-print">
+  <div class="container">
+    <p class="love">Сделано с любовью к закатам и ненавистью к понедельникам.</p>
+    <p class="tiny-note" style="margin-top:.8rem">© Вогвояж, 2026. Все взлёты вымышлены. Все совпадения по настроению — случайны.</p>
+  </div>
+</footer>
+
+<div class="toast no-print" id="toast" role="status" aria-live="polite"><span id="toastText"></span></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const preview = $("#qrPreview"), errEl = $("#qrError");
+const linkInput = $("#qrLink"), sizeInput = $("#qrSize"), sizeVal = $("#qrSizeVal");
+const pinkToggle = $("#qrPink"), frameToggle = $("#qrFrame");
+let currentUrl = "";
+
+/* По умолчанию — ссылка на интерактив рядом с этой страницей (работает и на GitHub Pages) */
+function interactiveURL(){
+  return new URL("interactive.html", location.href).href;
+}
+
+function setError(msg){ errEl.textContent = msg || ""; }
+
+function buildOptions(){
+  const size = parseInt(sizeInput.value, 10);
+  const dark = $("#qrPink").checked ? "#D6236B" : "#2A0F1D";
+  return {
+    width: size, margin: frameToggle.checked ? 3 : 1,
+    color: { dark, light: "#FFFFFF" },
+    errorCorrectionLevel: "M"
+  };
+}
+
+function render(){
+  const url = linkInput.value.trim();
+  currentUrl = url;
+  $("#qrFinalLink").value = url;
+  $("#qrLinkEcho").textContent = url;
+  sizeVal.textContent = sizeInput.value + " px";
+  preview.innerHTML = "";
+  setError("");
+  if (!url){ setError("Введите ссылку — иначе код ведёт в никуда."); return; }
+  if (!/^https?:\/\/.+\..+/i.test(url)){ setError("Ссылка похожа на недоделанный рейс: нужен формат https://…"); return; }
+  if (typeof QRCode === "undefined" || !QRCode.toCanvas){
+    setError("Библиотека QR не загрузилась (нет сети?). Подключитесь к интернету и обновите страницу.");
+    return;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.id = "qrCanvas";
+  preview.appendChild(canvas);
+  QRCode.toCanvas(canvas, url, buildOptions(), err => {
+    if (err) setError("Не удалось сгенерировать код: " + err.message);
+  });
+}
+
+/* Пресеты-чипы */
+$("#presetChips").addEventListener("click", e => {
+  const chip = e.target.closest(".preset-chip");
+  if (!chip) return;
+  document.querySelectorAll(".preset-chip").forEach(c => c.classList.remove("active"));
+  chip.classList.add("active");
+  const base = chip.dataset.url !== undefined && chip.dataset.url !== "" ? chip.dataset.url : interactiveURL();
+  linkInput.value = base + (chip.dataset.urlAppend || "");
+  render();
+});
+
+linkInput.addEventListener("input", () => render());
+sizeInput.addEventListener("input", () => { sizeVal.textContent = sizeInput.value + " px"; });
+sizeInput.addEventListener("change", () => render());
+pinkToggle.addEventListener("change", () => render());
+frameToggle.addEventListener("change", () => render());
+
+/* Копировать ссылку */
+$("#copyLinkBtn").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(currentUrl || ""); showToast("Ссылка скопирована. Летите."); }
+  catch(e){ $("#qrFinalLink").select(); document.execCommand("copy"); showToast("Ссылка скопирована. Летите."); }
+});
+
+/* Скачать PNG */
+$("#downloadPng").addEventListener("click", () => {
+  const canvas = $("#qrCanvas");
+  if (!canvas){ setError("Сначала сгенерируйте код."); return; }
+  const a = document.createElement("a");
+  a.download = "vogvoyazh-qr.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  showToast("PNG сохранён. Красота должна быть при себе.");
+});
+
+/* Скачать SVG (безопасная экранировка содержимого) */
+$("#downloadSvg").addEventListener("click", async () => {
+  if (!currentUrl){ setError("Сначала укажите ссылку."); return; }
+  if (typeof QRCode === "undefined" || !QRCode.toString){ setError("Библиотека QR не загрузилась."); return; }
+  try {
+    const svg = await QRCode.toString(currentUrl, { ...buildOptions(), type: "svg" });
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const a = document.createElement("a");
+    a.download = "vogvoyazh-qr.svg";
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    showToast("SVG сохранён. Полиграфия одобряет.");
+  } catch(err){ setError("Не удалось собрать SVG: " + err.message); }
+});
+
+/* Печать: выводим только превью кода */
+$("#printQr").addEventListener("click", () => {
+  if (!$("#qrCanvas")){ setError("Сначала сгенерируйте код."); return; }
+  const w = window.open("", "_blank");
+  if (!w){ setError("Браузер заблокировал окно печати. Разрешите всплывающие окна."); return; }
+  const dataUrl = $("#qrCanvas").toDataURL("image/png");
+  w.document.write(`<html><head><title>QR Вогвояж</title>
+    <style>body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;text-align:center}
+    img{width:min(80vmin,520px)}p{max-width:520px;word-break:break-all;color:#555}</style></head>
+    <body><div><img src="${dataUrl}" alt="QR"><p>${currentUrl.replace(/[<>&]/g,"")}</p></div>
+    <script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+});
+
+/* Тост */
+let toastTimer;
+function showToast(text){
+  const t = $("#toast");
+  $("#toastText").textContent = text;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 5000);
+}
+
+/* Ripple */
+document.addEventListener("pointerdown", e => {
+  const host = e.target.closest(".ripple-host");
+  if (!host) return;
+  const r = document.createElement("span");
+  const rect = host.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 1.15;
+  r.className = "ripple" + (host.classList.contains("btn-ghost") || host.classList.contains("btn-outline") ? " ripple-dark" : "");
+  r.style.width = r.style.height = size + "px";
+  r.style.left = (e.clientX - rect.left - size/2) + "px";
+  r.style.top  = (e.clientY - rect.top  - size/2) + "px";
+  host.appendChild(r);
+  r.addEventListener("animationend", () => r.remove());
+});
+
+/* Старт: сразу рисуем QR на интерактив */
+linkInput.value = interactiveURL();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Табло ведущего — ВОГВОЯЖ</title>
+<meta name="description" content="Live-табло Вогвояж для большого экрана: статистика зала, лента вылетов, голоса настроений и розыгрыш билета в закат.">
+<meta name="theme-color" content="#2A0F1D">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,600&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ---------- Табло для большого экрана (TV / проектор) ---------- */
+body.board-page{background:linear-gradient(160deg,#2A0F1D 0%,#4a1631 55%,#6b1d44 100%);color:#FFEAF3;min-height:100vh}
+body.board-page::before{display:none}
+
+.board-topbar{
+  position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:clamp(.8rem,2vw,1.6rem);flex-wrap:wrap;
+  padding:clamp(.8rem,2vw,1.4rem) clamp(1rem,3vw,2.6rem);
+  background:rgba(42,15,29,.6);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,143,190,.3);
+}
+.board-topbar .logo{color:#FFD6E6;font-size:clamp(1.1rem,2vw,1.6rem)}
+.board-topbar h1{font-family:var(--serif);font-size:clamp(1.3rem,2.6vw,2.2rem);margin-right:auto;color:#fff;font-weight:700}
+.live-pill{
+  display:inline-flex;align-items:center;gap:.5em;font-size:clamp(.7rem,1.1vw,.9rem);font-weight:800;
+  letter-spacing:.16em;text-transform:uppercase;color:#FFD6E6;
+}
+.dot{width:10px;height:10px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 0 rgba(74,222,128,.6);animation:pulseDot 1.6s infinite}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}70%{box-shadow:0 0 0 10px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+.clock{font-family:var(--serif);font-size:clamp(1.1rem,2.2vw,1.9rem);color:var(--neon);letter-spacing:.04em}
+
+.board-main{
+  padding:clamp(1rem,2.5vw,2.2rem) clamp(1rem,3vw,2.6rem);
+  display:grid;gap:clamp(1rem,1.8vw,1.6rem);
+  max-width:2200px;margin-inline:auto;
+}
+/* Три колонны на широком экране: статистика | лента | настроения + победитель */
+@media(min-width:1200px){
+  .board-main{grid-template-columns:minmax(340px,1fr) minmax(460px,1.25fr) minmax(380px,1fr)}
+}
+.board-col{display:grid;gap:clamp(1rem,1.8vw,1.6rem);align-content:start}
+.board-card{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,143,190,.3);
+  border-radius:calc(var(--radius)*.8);padding:clamp(1.1rem,2vw,1.8rem);
+  animation:fadeUp .7s cubic-bezier(.22,1,.36,1) both;
+}
+.board-card:nth-child(2){animation-delay:.08s}
+.board-card h2{font-family:var(--serif);color:#FF8FBE;font-size:clamp(1.05rem,1.7vw,1.5rem);margin-bottom:.9rem}
+
+/* Крупные цифры — читаемы из конца зала */
+.big-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:clamp(.8rem,1.4vw,1.2rem)}
+.big-stat{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,143,190,.35);border-radius:20px;
+  padding:clamp(1rem,2vw,1.7rem);text-align:center;transition:transform .3s;
+}
+.big-stat:hover{transform:translateY(-4px)}
+.big-stat .num{font-family:var(--serif);font-size:clamp(2.6rem,4.6vw,4.8rem);font-weight:900;color:var(--neon);line-height:1}
+.big-stat .lbl{font-size:clamp(.72rem,1vw,.95rem);letter-spacing:.16em;text-transform:uppercase;opacity:.8;margin-top:.5em}
+
+/* Лента вылетов */
+.board-feed{list-style:none;display:grid;gap:clamp(.55rem,.9vw,.85rem);max-height:62vh;overflow:auto;padding-right:.3rem}
+.board-feed::-webkit-scrollbar{width:6px}
+.board-feed::-webkit-scrollbar-thumb{background:rgba(255,143,190,.4);border-radius:99px}
+.board-feed li{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,143,190,.28);border-radius:16px;
+  padding:clamp(.7em,1.3vw,1em) clamp(.9em,1.5vw,1.2em);
+  font-size:clamp(.95rem,1.4vw,1.35rem);display:flex;gap:.6em;align-items:center;
+  animation:slidein .45s cubic-bezier(.22,1,.36,1);
+}
+.board-feed li time{margin-left:auto;font-size:.7em;opacity:.6;white-space:nowrap}
+.board-feed .ic{width:1.1em;height:1.1em;color:var(--neon);flex:none}
+.empty-note{opacity:.65;font-style:italic;padding:.6em 0;font-size:clamp(.9rem,1.3vw,1.15rem)}
+
+/* Bars настроений */
+.board-card .mood-bar{grid-template-columns:minmax(150px,210px) 1fr auto;gap:1rem;font-size:clamp(.85rem,1.25vw,1.15rem)}
+.board-card .mood-bar .track{height:14px;background:rgba(255,255,255,.12)}
+.board-card .winner{
+  font-size:clamp(1.15rem,2vw,1.7rem);min-height:96px;background:rgba(255,255,255,.05);
+  margin-top:1.2rem;color:#FFD6E6;
+}
+.board-actions{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.1rem}
+.board-page .tiny-note{color:rgba(255,214,230,.6)}
+.board-page .kicker{background:rgba(255,255,255,.1);border-color:rgba(255,143,190,.4);color:#FF8FBE}
+.qr-mini{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.qr-mini a{color:#FF8FBE;text-decoration:underline;text-underline-offset:.2em}
+</style>
+</head>
+<body class="board-page">
+
+<header class="board-topbar">
+  <span class="logo"><span class="spark" style="color:var(--neon)"><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></span> ВОГВОЯЖ</span>
+  <h1>Табло ведущего · зал ожидания реальности</h1>
+  <span class="live-pill"><span class="dot" aria-hidden="true"></span> live</span>
+  <span class="clock" id="clock">--:--:--</span>
+  <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+    <button class="btn btn-ghost btn-sm ripple-host" id="fsBtn">Во весь экран</button>
+    <a class="btn btn-outline btn-sm ripple-host" href="index.html">На главную</a>
+  </div>
+</header>
+
+<main class="board-main">
+
+  <!-- Колонна 1: статистика зала -->
+  <div class="board-col">
+    <section class="board-card" aria-label="Статистика зала">
+      <h2><svg class="ic ic-fill" style="color:var(--neon)" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Пульс зала</h2>
+      <div class="big-stats">
+        <div class="big-stat"><div class="num" id="statClicks">0</div><div class="lbl">нажатий</div></div>
+        <div class="big-stat"><div class="num" id="statTickets">0</div><div class="lbl">талонов</div></div>
+        <div class="big-stat"><div class="num" id="statBooks">0</div><div class="lbl">броней туров</div></div>
+        <div class="big-stat"><div class="num" id="statGuests">0</div><div class="lbl">вылетевших</div></div>
+      </div>
+      <p class="tiny-note" style="margin-top:1rem">Цифры обновляются автоматически. Источник — реальные клики и талоны этого браузера/зала.</p>
+    </section>
+
+    <section class="board-card" aria-label="Как включить табло">
+      <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg> Подсказка ведущему</h2>
+      <ul style="list-style:none;display:grid;gap:.6rem;font-size:clamp(.85rem,1.2vw,1.05rem)">
+        <li>• Нажмите «Во весь экран» — табель помещается на TV целиком.</li>
+        <li>• Гости сканируют QR → <a href="interactive.html" style="color:#FF8FBE">interactive.html</a>, жмут «На общее табло».</li>
+        <li>• «Розыгрыш билета» выбирает победителя из вылетевших.</li>
+      </ul>
+      <div class="qr-mini" style="margin-top:1rem">
+        <canvas id="miniQr" aria-label="QR на страницу интерактива"></canvas>
+        <span class="tiny-note">QR ведёт гостей<br>на <a href="interactive.html">interactive.html</a></span>
+      </div>
+    </section>
+  </div>
+
+  <!-- Колонна 2: лента вылетов -->
+  <div class="board-col">
+    <section class="board-card" style="animation-delay:.05s" aria-label="Лента вылетов">
+      <h2><svg class="ic ic-fill" style="color:var(--neon)" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg> Кто уже улетел</h2>
+      <ul class="board-feed" id="feedList"></ul>
+      <p class="empty-note" id="feedEmpty" hidden>Пока никто не улетел. Зал ещё сомневается между «надо» и «хочется».</p>
+    </section>
+  </div>
+
+  <!-- Колонна 3: голоса настроений + розыгрыш -->
+  <div class="board-col">
+    <section class="board-card" style="animation-delay:.1s" aria-label="Голоса настроений">
+      <h2><svg class="ic ic-fill" style="color:var(--neon)" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.5 12 21 12 21z"/></svg> Голоса настроений</h2>
+      <div class="mood-bars" id="bars"><!-- строки статистики --></div>
+    </section>
+
+    <section class="board-card" style="animation-delay:.15s" aria-label="Розыгрыш">
+      <h2><svg class="ic ic-fill" style="color:var(--neon)" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 4.5 3L12 4l4.5 6L21 7l-1.8 11H4.8z"/></svg> Розыгрыш билета в закат</h2>
+      <div class="winner" id="winnerBox">Победитель ещё не выбран. Зал ждёт магии.</div>
+      <div class="board-actions">
+        <button class="btn btn-primary ripple-host shine" id="pickWinner">Розыгрыш билета</button>
+        <button class="btn btn-ghost ripple-host" id="resetAll">Сбросить данные зала</button>
+      </div>
+    </section>
+  </div>
+
+</main>
+
+<div class="toast no-print" id="toast" role="status" aria-live="polite"><span id="toastText"></span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="shared.js"></script>
+<script>
+"use strict";
+
+/* ---------- Часы для зала ---------- */
+const clockEl = $("#clock");
+function tickClock(){
+  clockEl.textContent = new Date().toLocaleTimeString("ru-RU");
+}
+tickClock(); setInterval(tickClock, 1000);
+
+/* ---------- Полный экран (режим TV) ---------- */
+$("#fsBtn").addEventListener("click", () => {
+  if (!document.fullscreenElement){ document.documentElement.requestFullscreen?.().catch(()=>{}); }
+  else { document.exitFullscreen?.(); }
+});
+
+/* ---------- Мини-QR на интерактив прямо на табло ---------- */
+(function miniQR(){
+  const c = $("#miniQr");
+  if (typeof QRCode !== "undefined" && QRCode.toCanvas){
+    QRCode.toCanvas(c, new URL("interactive.html", location.href).href,
+      { width: 132, margin: 2, color:{ dark:"#2A0F1D", light:"#FFF6F8" } }, ()=>{});
+  }
+})();
+
+/* ---------- Рендер ленты, bars и победителя ---------- */
+let lastWinnerTs = 0;
+try { lastWinnerTs = parseInt(localStorage.getItem("vogvoyazh_last_winner_ts") || "0", 10); } catch(e){}
+
+function renderBoardPage(){
+  const feed = loadFeed();
+
+  /* Лента */
+  const list = $("#feedList"), empty = $("#feedEmpty");
+  list.innerHTML = "";
+  if (!feed.length){ empty.hidden = false; }
+  else {
+    empty.hidden = true;
+    feed.slice(0, 12).forEach(f => {
+      const li = document.createElement("li");
+      li.innerHTML = `${ICONS.plane}<span>${feedLine(f)}</span>`;
+      list.appendChild(li);
+    });
+  }
+
+  /* Guest count */
+  animateNumber($("#statGuests"), feed.length);
+
+  /* Bars */
+  const counts = {}; let total = 0;
+  feed.forEach(f => { if (f.mood){ counts[f.mood] = (counts[f.mood]||0)+1; total++; } });
+  const bars = $("#bars");
+  bars.innerHTML = "";
+  Object.keys(MOODS).forEach(mood => {
+    const n = counts[mood] || 0;
+    const pct = total ? Math.round(n/total*100) : 0;
+    const row = document.createElement("div");
+    row.className = "mood-bar";
+    row.innerHTML = `<span>${mood}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><b>${n}</b>`;
+    bars.appendChild(row);
+  });
+
+  /* Победитель из сохранённого розыгрыша */
+  if (lastWinnerTs){
+    try {
+      const w = JSON.parse(localStorage.getItem("vogvoyazh_last_winner") || "null");
+      if (w) $("#winnerBox").textContent = `${w.name} получает билет в ${w.dest}!`;
+    } catch(e){}
+  }
+}
+
+/* ---------- Розыгрыш победителя ---------- */
+$("#pickWinner").addEventListener("click", () => {
+  const feed = loadFeed();
+  const box = $("#winnerBox");
+  if (!feed.length){
+    box.textContent = "Нечего разыгрывать: сначала пусть кто-нибудь улетит через QR.";
+    return;
+  }
+  const w = rand(feed);
+  box.textContent = `${w.name} получает билет в ${w.dest}!`;
+  box.classList.remove("celebrate"); void box.offsetWidth; box.classList.add("celebrate");
+  lastWinnerTs = Date.now();
+  try {
+    localStorage.setItem("vogvoyazh_last_winner", JSON.stringify(w));
+    localStorage.setItem("vogvoyazh_last_winner_ts", String(lastWinnerTs));
+  } catch(e){}
+});
+
+/* ---------- Сброс данных зала ---------- */
+$("#resetAll").addEventListener("click", () => {
+  try {
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(STATS_KEY);
+    localStorage.removeItem("vogvoyazh_last_winner");
+    localStorage.removeItem("vogvoyazh_last_winner_ts");
+  } catch(e){}
+  Stats.data = {clicks:0, byTarget:{}, tickets:0, books:0, ts:Date.now()};
+  $("#winnerBox").textContent = "Победитель ещё не выбран. Зал ждёт магии.";
+  renderBoardPage(); renderStats();
+  showToast("Данные зала сброшены. Чистый лист и чистый закат.");
+});
+
+/* ---------- Живое обновление: свой интервал + storage от вкладок гостей ---------- */
+renderBoardPage();
+renderStats();
+setInterval(renderBoardPage, 3000);
+window.addEventListener("storage", e => {
+  if (e.key === LS_KEY || e.key === "vogvoyazh_last_winner"){ renderBoardPage(); }
+  if (e.key === STATS_KEY){ Stats.load(); renderStats(); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+/* ============================================================
+   ВОГВОЯЖ — общая дизайн-система для отдельных страниц
+   (qr.html, interactive.html, board.html)
+   Дублирует токены/компоненты из index.html, чтобы страницы
+   были самодостаточными и не тянули лишний код главной.
+   ============================================================ */
+:root{
+  --bg:#FFF6F8;
+  --hot:#FF2E93;        /* горячая фуксия */
+  --soft:#FF8FBE;       /* мягкий розовый */
+  --powder:#FFD6E6;     /* пудровый */
+  --ink:#2A0F1D;        /* глубокая слива */
+  --gold:#E8B4A0;       /* розовое золото */
+  --peach:#FFC3A0;      /* персиковый */
+  --crimson:#D6236B;    /* малиновый */
+  --neon:#FF5FC1;       /* неоновый pink */
+  --glass:rgba(255,255,255,.55);
+  --glass-border:rgba(255,143,190,.45);
+  --shadow-pink:0 20px 60px -20px rgba(255,46,147,.35);
+  --radius:28px;
+  --serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --sans:"Manrope","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img,svg,video{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit}
+
+/* Фоновые «закатные» пятна */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(60% 40% at 85% 8%, rgba(255,94,193,.18), transparent 70%),
+    radial-gradient(50% 45% at 8% 30%, rgba(255,195,160,.20), transparent 70%),
+    radial-gradient(65% 50% at 90% 85%, rgba(255,46,147,.12), transparent 70%),
+    var(--bg);
+}
+
+.container{width:min(1120px,92%);margin-inline:auto}
+
+h1,h2,h3,.serif{font-family:var(--serif)}
+.h-section{font-size:clamp(1.9rem,4.5vw,3.2rem);font-weight:700;line-height:1.1}
+.kicker{
+  display:inline-flex;align-items:center;gap:.5em;
+  font-size:.78rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--crimson);background:var(--glass);border:1px solid var(--glass-border);
+  padding:.45em 1.1em;border-radius:999px;backdrop-filter:blur(10px);
+}
+.muted{color:rgba(42,15,29,.62)}
+.tiny-note{font-size:.78rem;color:rgba(42,15,29,.5);font-style:italic}
+
+/* Иконки (inline SVG вместо эмодзи) */
+.ic{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:-.2em}
+.ic-fill{fill:currentColor;stroke:none}
+
+/* Ripple-волна на кликах (shadcn/ui-паттерн) */
+.ripple-host{position:relative;overflow:hidden;isolation:isolate}
+.ripple{position:absolute;border-radius:50%;transform:scale(0);pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(255,255,255,.55),rgba(255,255,255,0) 70%);
+  animation:rippleAnim .6s ease-out forwards}
+.ripple-dark{background:radial-gradient(circle,rgba(255,46,147,.28),rgba(255,46,147,0) 70%)}
+@keyframes rippleAnim{to{transform:scale(2.6);opacity:0}}
+
+/* Shimmer для primary-кнопок */
+.shine::before{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;z-index:1;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);
+  transform:skewX(-18deg);transition:left .65s ease;pointer-events:none}
+.shine:hover::before{left:130%}
+
+/* Анимации появления */
+@keyframes fadeUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes zoomIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulseSoft{0%,100%{box-shadow:0 0 0 0 rgba(255,46,147,.35)}50%{box-shadow:0 0 0 12px rgba(255,46,147,0)}}
+@keyframes slidein{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+.anim-fadeup{animation:fadeUp .9s cubic-bezier(.22,1,.36,1) both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}.d4{animation-delay:.4s}.d5{animation-delay:.55s}
+
+/* Кнопки (shadcn-style) */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.55em;
+  height:44px;padding:0 1.6em;border-radius:999px;font-weight:800;font-size:.92rem;
+  letter-spacing:.01em;position:relative;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, background .25s, border-color .25s, color .25s;
+  will-change:transform;white-space:nowrap;
+}
+.btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--hot)}
+.btn:active{transform:scale(.96)}
+.btn > *{position:relative;z-index:1}
+.btn-primary{background:linear-gradient(120deg,var(--hot),var(--neon));color:#fff;box-shadow:var(--shadow-pink)}
+.btn-primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 26px 70px -18px rgba(255,46,147,.55)}
+.btn-ghost{background:var(--glass);border:1.5px solid var(--glass-border);color:var(--ink);backdrop-filter:blur(10px)}
+.btn-ghost:hover{transform:translateY(-3px);background:rgba(255,214,230,.75)}
+.btn-outline{border:1.5px solid var(--hot);color:var(--hot);background:transparent}
+.btn-outline:hover{background:var(--hot);color:#fff;transform:translateY(-3px)}
+.btn-sm{height:38px;padding:0 1.15em;font-size:.85rem}
+
+/* Шапка страниц */
+.header{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,246,248,.72);backdrop-filter:blur(16px) saturate(1.3);
+  border-bottom:1px solid rgba(255,143,190,.3);
+}
+.header-inner{display:flex;align-items:center;gap:1.2rem;padding:.75rem 0}
+.logo{font-family:var(--serif);font-weight:900;font-size:1.35rem;letter-spacing:.06em;display:flex;align-items:center;gap:.4em}
+.logo .spark{color:var(--hot)}
+.header .spacer{margin-left:auto}
+
+/* Поля форм */
+.field label{display:block;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--crimson);margin-bottom:.4em}
+.field input{
+  width:100%;padding:.9em 1.1em;border-radius:16px;border:1.5px solid rgba(255,143,190,.5);
+  background:rgba(255,255,255,.75);font-size:1rem;color:var(--ink);transition:border .2s, box-shadow .2s;
+}
+.field input:focus{outline:none;border-color:var(--hot);box-shadow:0 0 0 4px rgba(255,46,147,.15)}
+.field input::placeholder{color:rgba(42,15,29,.4);font-style:italic}
+
+/* Тост */
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translate(-50%,140%);
+  z-index:120;max-width:min(480px,92vw);
+  background:rgba(42,15,29,.92);color:#FFEAF3;padding:1rem 1.3rem;border-radius:20px;
+  border:1px solid rgba(255,143,190,.4);box-shadow:0 24px 60px -18px rgba(42,15,29,.6);
+  display:flex;flex-direction:column;gap:.7rem;font-size:.92rem;
+  transition:transform .45s cubic-bezier(.34,1.4,.64,1);
+}
+.toast.show{transform:translate(-50%,0)}
+.toast .btn{align-self:flex-start}
+
+/* Шаги интерактива */
+.steps{display:flex;gap:.5rem;margin-bottom:1.4rem;flex-wrap:wrap}
+.step-dot{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(42,15,29,.4);border:1.5px solid rgba(255,143,190,.5);border-radius:999px;padding:.35em 1em;transition:all .3s}
+.step-dot.active{color:#fff;background:linear-gradient(120deg,var(--hot),var(--neon));border-color:transparent;animation:zoomIn .35s ease both}
+
+/* Кнопки настроений */
+.mood-grid{display:grid;gap:.7rem;grid-template-columns:1fr}
+@media(min-width:520px){.mood-grid{grid-template-columns:1fr 1fr}}
+.mood-btn{
+  text-align:left;padding:1em 1.2em;border-radius:18px;font-weight:800;font-size:1rem;
+  background:rgba(255,255,255,.8);border:1.5px solid rgba(255,143,190,.5);
+  display:flex;align-items:center;gap:.7em;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1), border-color .25s, background .25s, box-shadow .25s;
+  position:relative;animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both;
+}
+.mood-btn:nth-child(2){animation-delay:.06s}.mood-btn:nth-child(3){animation-delay:.12s}
+.mood-btn:nth-child(4){animation-delay:.18s}.mood-btn:nth-child(5){animation-delay:.24s}
+.mood-btn:hover{border-color:var(--hot);background:var(--powder);transform:translateX(4px);box-shadow:0 10px 28px -12px rgba(255,46,147,.4)}
+.mood-btn:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--hot)}
+.mood-btn:active{transform:scale(.97)}
+.mood-btn .ic{width:22px;height:22px;color:var(--hot)}
+
+/* Посадочный талон */
+.boarding-pass{
+  font-family:var(--sans);color:var(--ink);border-radius:22px;overflow:hidden;
+  background:linear-gradient(135deg,#FFD6E6 0%,#FFB8D4 45%,#FF8FBE 100%);
+  box-shadow:0 24px 60px -20px rgba(214,35,107,.5);
+  position:relative;animation:zoomIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.bp-top{padding:1.2rem 1.3rem;background:rgba(255,255,255,.55);backdrop-filter:blur(8px)}
+.bp-brand{display:flex;align-items:center;justify-content:space-between;font-weight:800}
+.bp-brand .airline{font-family:var(--serif);font-weight:900;font-size:1.25rem;letter-spacing:.08em;display:inline-flex;align-items:center;gap:.4em}
+.bp-brand .airline .ic{width:1.1em;height:1.1em;color:var(--crimson)}
+.bp-perf{border-top:2.5px dashed rgba(42,15,29,.4);margin:0}
+.bp-main{padding:1.2rem 1.3rem;display:grid;gap:1rem}
+.bp-row{display:flex;justify-content:space-between;gap:1rem;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(42,15,29,.6)}
+.bp-row strong{display:block;font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink);margin-top:.15em}
+.bp-name{font-family:var(--serif);font-size:clamp(1.5rem,5vw,2.1rem);font-weight:900;letter-spacing:.02em;line-height:1.1}
+.bp-name small{display:block;font-family:var(--sans);font-size:.68rem;font-weight:800;letter-spacing:.2em;color:rgba(42,15,29,.55);margin-bottom:.2em}
+.bp-route{display:flex;align-items:center;gap:.9rem}
+.bp-route .pt{flex:1}
+.bp-route .arrow svg{width:26px;height:26px;color:var(--crimson);fill:currentColor;stroke:none;display:block}
+.bp-stub{padding:1rem 1.3rem;background:rgba(255,255,255,.5);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.bp-barcode{flex:1;height:44px;min-width:140px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 7px,transparent 7px 9px,var(--ink) 9px 12px,transparent 12px 15px);border-radius:4px;opacity:.85}
+.bp-promo{font-weight:800;font-size:.85rem;letter-spacing:.06em;color:var(--crimson)}
+.bp-note{font-size:.8rem;font-style:italic;color:rgba(42,15,29,.7);padding:0 1.3rem 1.2rem}
+.bp-sparkle{position:absolute;pointer-events:none;color:#fff;filter:drop-shadow(0 1px 4px rgba(214,35,107,.5));animation:floaty 3.2s ease-in-out infinite}
+.bp-sparkle svg{width:18px;height:18px;fill:currentColor;stroke:none}
+.bp-sparkle.s2{animation-delay:1.2s}.bp-sparkle.s2 svg{width:13px;height:13px}
+.bp-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+
+/* Лента пассажиров */
+.feed{list-style:none;display:grid;gap:.6rem;margin-top:1rem}
+.feed li{
+  background:rgba(255,255,255,.7);border:1px solid rgba(255,143,190,.4);border-radius:14px;
+  padding:.7em 1em;font-size:.9rem;display:flex;gap:.6em;align-items:center;
+  animation:slidein .4s ease;
+}
+
+/* Bars статистики настроений */
+.mood-bars{display:grid;gap:.55rem;margin:1rem 0}
+.mood-bar{display:grid;grid-template-columns:170px 1fr auto;gap:.8rem;align-items:center;font-size:.85rem}
+@media(max-width:560px){.mood-bar{grid-template-columns:120px 1fr auto}}
+.mood-bar .track{height:10px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
+.mood-bar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--hot),var(--neon));transition:width .6s ease}
+.winner{
+  margin-top:1.2rem;min-height:64px;border-radius:18px;border:2px dashed rgba(255,143,190,.5);
+  display:grid;place-items:center;padding:1rem;font-family:var(--serif);font-size:1.3rem;color:#FFD6E6;text-align:center;
+}
+.winner.celebrate{animation:shake .5s ease}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-1.5deg)}75%{transform:rotate(1.5deg)}}
+
+/* Footer страниц */
+.footer{padding:2.2rem 0;border-top:1px solid rgba(255,143,190,.4);background:linear-gradient(180deg,transparent,rgba(255,214,230,.5))}
+.footer .disclaimer{max-width:640px;font-size:.85rem;color:rgba(42,15,29,.65)}
+.footer .love{margin-top:.8rem;font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--crimson)}
+
+/* Появление секций */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1)}
+.reveal.visible{opacity:1;transform:none}
+
+/* prefers-reduced-motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+  .reveal{opacity:1;transform:none}
+}
+
+/* PRINT: печать только посадочного талона */
+@media print{
+  body *{visibility:hidden !important}
+  #boardingPassBox, #boardingPassBox *{visibility:visible !important}
+  #boardingPassBox{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;box-shadow:none !important}
+  .no-print{display:none !important}
+}
