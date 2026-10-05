@@ -156,6 +156,7 @@ function generateTicket(moodName){
   const rawName = nameEl ? nameEl.value.trim() : "";
   const name = (rawName || "ГОСТЬ ЗАКАТА").toUpperCase();
   const dest = rand(MOODS[moodName].destinations);
+  const now = new Date();
   currentTicket = {
     name, mood: moodName, dest,
     flight: "VOY-" + (Math.floor(Math.random()*900) + 100),
@@ -164,48 +165,83 @@ function generateTicket(moodName){
     baggage: rand(BAGGAGE),
     promo: "PINK-ZAL-" + Math.random().toString(36).slice(2,6).toUpperCase(),
     note: rand(NOTES),
-    date: new Date().toLocaleDateString("ru-RU")
+    depTime: String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0"),
+    boarding: String(((now.getHours()+23)%24)).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0"),
+    date: now.toLocaleDateString("ru-RU"),
+    code: "VV" + Math.random().toString(36).slice(2,5).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase()
   };
   renderTicket(currentTicket);
   return currentTicket;
 }
 
+/* Полоски штрихкода — детерминированные по коду талона (выглядит как настоящий barcode) */
+function barcodeBars(seedStr){
+  let h = 2166136261;
+  for (const c of seedStr){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  let bars = "";
+  for (let i = 0; i < 44; i++){ h = (Math.imul(h, 1103515245) + 12345) >>> 0; bars += (h % 100 < 46 ? "1" : "0"); }
+  return bars;
+}
+
 function renderTicket(t){
-  $("#boardingPassBox").innerHTML = `
+  const box = $("#boardingPassBox");
+  if (!box) return;
+  const bars = barcodeBars(t.promo + t.flight + t.code).split("").map(b => `<i class="${b === "1" ? "on" : ""}"></i>`).join("");
+  box.innerHTML = `
   <div class="boarding-pass" id="bpCard">
-    <span class="bp-sparkle" style="top:10px;right:16px">${ICONS.sparkle}</span>
-    <span class="bp-sparkle s2" style="bottom:64px;left:12px">${ICONS.star}</span>
-    <div class="bp-top">
-      <div class="bp-brand">
-        <span class="airline">${ICONS.plane} ВОГВОЯЖ</span>
-        <span style="font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--crimson)">Boarding Mood Pass</span>
+    <span class="bp-glare" aria-hidden="true"></span>
+    <div class="bp-head">
+      <div>
+        <div class="bp-airline">${ICONS.plane} ВОГВОЯЖ</div>
+        <div class="bp-sub">Boarding Mood Pass · Class розовый</div>
       </div>
-      <div class="bp-row" style="margin-top:.9rem">
-        <span>Рейс<strong>${esc(t.flight)}</strong></span>
-        <span>Дата<strong style="text-transform:none">${esc(t.date)}</strong></span>
-        <span>Место<strong>${esc(t.seat)}</strong></span>
-        <span>Выход<strong>${esc(t.gate)}</strong></span>
+      <div class="bp-chip" aria-hidden="true">VV<br>026</div>
+    </div>
+
+    <div class="bp-hero">
+      <div class="bp-from">
+        <small>Откуда</small>
+        <b>ZAL</b>
+        <span>Зал ожидания реальности</span>
+      </div>
+      <div class="bp-flightpath" aria-hidden="true">
+        <span class="dot"></span>
+        <span class="line"></span>
+        <span class="planeicon">${ICONS.plane}</span>
+        <span class="line"></span>
+        <span class="dot"></span>
+      </div>
+      <div class="bp-to">
+        <small>Куда</small>
+        <b>${esc(t.dest)}</b>
+        <span>прибытие — красиво</span>
       </div>
     </div>
-    <div class="bp-main">
-      <div class="bp-name"><small>Пассажир · Настроение: ${esc(t.mood)}</small>${esc(t.name)}</div>
-      <div class="bp-route">
-        <div class="pt bp-row" style="flex:1"><span>Откуда</span><strong>Зал ожидания реальности</strong></div>
-        <div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></div>
-        <div class="pt bp-row" style="flex:1;text-align:right"><span>Куда</span><strong>${esc(t.dest)}</strong></div>
-      </div>
-      <div class="bp-grid-3">
-        <div class="bp-row"><span>Багаж</span><strong>${esc(t.baggage)}</strong></div>
-        <div class="bp-row"><span>Промокод</span><strong>${esc(t.promo)}</strong></div>
-        <div class="bp-row"><span>Класс</span><strong>Розовый</strong></div>
-      </div>
+
+    <div class="bp-fields">
+      <div class="bp-f"><span>Пассажир</span><strong class="bp-name">${esc(t.name)}</strong></div>
+      <div class="bp-f"><span>Рейс</span><strong>${esc(t.flight)}</strong></div>
+      <div class="bp-f"><span>Дата</span><strong>${esc(t.date)}</strong></div>
+      <div class="bp-f"><span>Место</span><strong>${esc(t.seat)}</strong></div>
+      <div class="bp-f"><span>Выход</span><strong>${esc(t.gate)}</strong></div>
+      <div class="bp-f"><span>Посадка</span><strong>${esc(t.boarding)}</strong></div>
+      <div class="bp-f"><span>Вылет</span><strong>${esc(t.depTime)}</strong></div>
+      <div class="bp-f"><span>Настроение</span><strong>${esc(t.mood)}</strong></div>
+      <div class="bp-f bp-wide"><span>Багаж</span><strong>${esc(t.baggage)}</strong></div>
     </div>
-    <hr class="bp-perf">
+
+    <div class="bp-cutline" aria-hidden="true"><i class="notch left"></i><i class="dash"></i><i class="notch right"></i></div>
+
     <div class="bp-stub">
-      <div class="bp-barcode" aria-hidden="true"></div>
-      <div class="bp-promo">${esc(t.promo)}</div>
+      <div class="bp-stub-info">
+        <span>Промокод</span>
+        <strong>${esc(t.promo)}</strong>
+      </div>
+      <div class="bp-barcode" aria-hidden="true">${bars}</div>
+      <div class="bp-code">${esc(t.code)} · ${esc(t.flight)}</div>
     </div>
-    <p class="bp-note">Примечание: «${esc(t.note)}»</p>
+
+    <p class="bp-note">«${esc(t.note)}»</p>
   </div>`;
 }
 

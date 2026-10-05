@@ -10,7 +10,7 @@
 <!-- Шрифты: Playfair Display (заголовки) + Manrope (текст). При отсутствии сети — системные fallback -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,600&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,600&family=Manrope:wght@400;500;700;800&family=Unbounded:wght@500;700;900&display=swap" rel="stylesheet">
 
 <!-- Supabase CDN: используется ТОЛЬКО если заданы credentials ниже (real-time табло). Без них — локальный демо-режим -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -186,7 +186,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
   box-shadow:var(--shadow-pink);transition:background .25s, box-shadow .25s;
 }
 .sound-toggle:hover{background:rgba(255,214,230,.9);box-shadow:0 26px 70px -18px rgba(255,46,147,.55)}
-.hero-content{max-width:720px}
+.hero-content{max-width:780px}
 .hero .badge-notreal{
   display:inline-flex;align-items:center;gap:.5em;margin-top:1.6rem;
   font-size:.8rem;font-weight:700;font-style:italic;color:var(--crimson);
@@ -199,17 +199,44 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .scroll-hint{position:absolute;left:50%;bottom:1.2rem;transform:translateX(-50%);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(42,15,29,.5);animation:bob 2.2s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
 
-/* ---------- Marquee ---------- */
-.marquee{overflow:hidden;border-block:1px solid rgba(255,143,190,.4);background:linear-gradient(90deg,var(--powder),#ffeef4,var(--powder));padding:.65rem 0}
+/* --- Fashion-акценты hero: дисплейный шрифт + глянцевый текст --- */
+.h-display{
+  font-family:"Unbounded",var(--serif);font-weight:900;
+  letter-spacing:-.02em;
+}
+/* Глянцевая «лакированная» заливка заголовка (статичная — не мерцает) */
+.h-display.glossy{
+  background:linear-gradient(175deg,#2A0F1D 8%,#D6236B 46%,#FF5FC1 62%,#E8B4A0 82%,#2A0F1D 97%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 14px 30px rgba(214,35,107,.28));
+}
+/* Вертикальная неоновая надпись в духе fashion-журналов */
+.hero-side{
+  position:absolute;right:2.2%;top:50%;z-index:2;pointer-events:none;
+  writing-mode:vertical-rl;text-orientation:mixed;
+  font-weight:800;font-size:.72rem;letter-spacing:.42em;text-transform:uppercase;
+  color:rgba(42,15,29,.45);transform:translateY(-50%);
+}
+.hero-side b{color:var(--hot)}
+@media(max-width:900px){.hero-side{display:none}}
+/* Бегущая строка — тёмная, как тикер модного дома */
+.marquee{overflow:hidden;border-block:1px solid rgba(42,15,29,.9);background:var(--ink);padding:.8rem 0}
 .marquee-track{display:flex;gap:2.5rem;width:max-content;animation:marquee 26s linear infinite}
-.marquee span{font-weight:800;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;color:var(--crimson);white-space:nowrap}
+.marquee span{font-weight:800;font-size:.85rem;letter-spacing:.16em;text-transform:uppercase;color:#FFD6E6;white-space:nowrap}
+.marquee span::after{content:"✦";margin-left:2.5rem;color:var(--neon)}
 @keyframes marquee{to{transform:translateX(-50%)}}
 
-/* ---------- Секции ---------- */
-.section{padding:clamp(3.5rem,8vw,6rem) 0}
+/* ---------- Секции: нумерованные, как в lookbook ---------- */
+.section{padding:clamp(3.5rem,8vw,6rem) 0;position:relative}
 .section-head{max-width:640px;margin-bottom:2.4rem}
 .section-head .h-section{margin-top:.7rem}
 .section-head p{margin-top:.7rem;color:rgba(42,15,29,.68)}
+.section-num{
+  position:absolute;top:clamp(1.2rem,3vw,2.4rem);right:clamp(.6rem,3vw,2rem);z-index:0;pointer-events:none;
+  font-family:"Unbounded",var(--serif);font-weight:900;font-size:clamp(4.5rem,13vw,9.5rem);line-height:1;
+  color:transparent;-webkit-text-stroke:1.5px rgba(255,46,147,.22);letter-spacing:-.03em;
+}
+.section .container{position:relative;z-index:1}
 
 /* ---------- Поиск билетов (фейк) ---------- */
 .search-card{
@@ -242,7 +269,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
   /* Три колонны — карточки крупные, но не занимают весь экран */
   .tours-grid{grid-template-columns:repeat(3,1fr)}
 }
-.tour-card:hover{box-shadow:0 40px 90px -25px rgba(255,46,147,.5)}
+.tour-card:hover{transform:translateY(-10px);box-shadow:0 40px 90px -25px rgba(255,46,147,.5)}
 /* Блик на карточке при наведении (shadcn-style glow) */
 .tour-card::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .4s;
   background:radial-gradient(560px circle at var(--mx,50%) var(--my,0%),rgba(255,95,193,.18),transparent 65%)}
@@ -251,6 +278,9 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .tour-visual .ic{width:clamp(64px,9vw,110px);height:clamp(64px,9vw,110px);stroke-width:1.2;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
 .tour-card:hover .tour-visual .ic{transform:scale(1.18) rotate(-6deg)}
 .tour-visual::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 20% 0%,rgba(255,255,255,.35),transparent 60%)}
+/* Тонкая «глянцевая» диагональная полоса на обложке тура */
+.tour-visual::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 46%,rgba(255,255,255,.35) 50%,transparent 54%)}
 /* ЗАМЕНИТЬ CSS-градиенты карточек на реальные изображения туров при необходимости */
 .tour-visual.v1{background:linear-gradient(135deg,#FFD6E6,#FF8FBE)}
 .tour-visual.v2{background:linear-gradient(135deg,#FF8FBE,#FF2E93)}
@@ -258,10 +288,15 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .tour-visual.v4{background:linear-gradient(135deg,#FF2E93,#D6236B)}
 .tour-visual.v5{background:linear-gradient(135deg,#E8B4A0,#FFD6E6)}
 .tour-visual.v6{background:linear-gradient(135deg,#FF5FC1,#FFC3A0)}
+/* Нумерация туров в духе fashion-lookbook */
+.tour-num{position:absolute;left:14px;bottom:-6px;font-family:"Unbounded",var(--serif);font-weight:900;
+  font-size:3.4rem;line-height:1;color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.65);pointer-events:none}
+/* Ленты-стикеры — космические, как на глянце */
 .tour-sticker{
-  position:absolute;top:12px;right:-34px;transform:rotate(35deg);
+  position:absolute;top:16px;right:-40px;transform:rotate(35deg);z-index:2;
   background:var(--ink);color:#FFD6E6;font-size:.62rem;font-weight:800;letter-spacing:.14em;
-  text-transform:uppercase;padding:.35em 2.6em;
+  text-transform:uppercase;padding:.4em 3em;
+  box-shadow:0 10px 24px -10px rgba(42,15,29,.6);
 }
 .tour-body{padding:clamp(1.6rem,3vw,2.6rem);display:flex;flex-direction:column;gap:.9rem}
 .tour-body h3{font-size:clamp(1.7rem,3vw,2.6rem)}
@@ -269,6 +304,16 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .tour-price{font-weight:800;color:var(--hot);font-size:clamp(1.05rem,1.6vw,1.3rem)}
 .tour-price small{display:block;font-weight:500;color:rgba(42,15,29,.45);font-size:.78rem;font-style:italic;margin-top:.2em}
 .tour-body .btn{height:52px;padding:0 2em;font-size:1rem;align-self:flex-start;margin-top:.4rem}
+
+/* Появление карточек туров по очереди при скролле */
+.tour-card{opacity:0;transform:translateY(34px);transition:opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1), box-shadow .35s}
+.tours-grid.visible .tour-card{opacity:1;transform:none}
+.tours-grid.visible .tour-card:nth-child(2){transition-delay:.08s}
+.tours-grid.visible .tour-card:nth-child(3){transition-delay:.16s}
+.tours-grid.visible .tour-card:nth-child(4){transition-delay:.08s}
+.tours-grid.visible .tour-card:nth-child(5){transition-delay:.16s}
+.tours-grid.visible .tour-card:nth-child(6){transition-delay:.24s}
+@media(prefers-reduced-motion:reduce){.tour-card{opacity:1;transform:none}}
 
 /* ---------- Ролик ---------- */
 .video-frame{
@@ -292,11 +337,21 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 @media(min-width:820px){.qr-block{grid-template-columns:1.1fr .9fr}}
 .qr-stage{display:grid;place-items:center;gap:1rem}
 .qr-frame{
-  background:#fff;padding:16px;border-radius:24px;
+  position:relative;background:#fff;padding:16px;border-radius:24px;
   box-shadow:0 20px 50px -15px rgba(42,15,29,.35);
-  border:2px solid var(--powder);transition:transform .3s;
+  transition:transform .3s;overflow:hidden;
+  animation:qrGlow 3.2s ease-in-out infinite;
 }
-.qr-frame:hover{box-shadow:0 30px 70px -18px rgba(255,46,147,.45);border-color:var(--soft)}
+/* Бегущая неоновая рамка — «живой» QR в духе fashion-campaign */
+.qr-frame::before{content:"";position:absolute;inset:-120%;pointer-events:none;z-index:0;
+  background:conic-gradient(from 0deg,transparent 0 300deg,var(--hot) 320deg,var(--neon) 345deg,transparent 360deg);
+  animation:spin 3.6s linear infinite}
+.qr-frame::after{content:"";position:absolute;inset:3px;border-radius:21px;background:#fff;z-index:1;pointer-events:none}
+.qr-frame svg{position:relative;z-index:2}
+@keyframes spin{to{transform:rotate(1turn)}}
+@keyframes qrGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,46,147,.3),0 24px 60px -18px rgba(255,46,147,.4)}
+  50%{box-shadow:0 0 44px 6px rgba(255,46,147,.32),0 24px 60px -18px rgba(255,46,147,.4)}}
+.qr-frame:hover{transform:scale(1.03)}
 /* ЗАМЕНИТЬ: вставьте сюда реальный QR — <img src="/assets/qr.png" alt="QR Вогвояж"> вместо inline-SVG ниже */
 .qr-frame svg{width:min(230px,55vw);height:auto;display:block}
 .qr-note{font-weight:800;color:var(--crimson);text-align:center}
@@ -354,38 +409,76 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .mood-btn:nth-child(2){animation-delay:.06s}.mood-btn:nth-child(3){animation-delay:.12s}
 .mood-btn:nth-child(4){animation-delay:.18s}.mood-btn:nth-child(5){animation-delay:.24s}
 
-/* ---------- Посадочный талон ---------- */
+/* ---------- Посадочный талон — компактный премиальный вид (как в shared.css) ---------- */
 .boarding-pass{
-  font-family:var(--sans);color:var(--ink);border-radius:22px;overflow:hidden;
-  background:linear-gradient(135deg,#FFD6E6 0%,#FFB8D4 45%,#FF8FBE 100%);
-  box-shadow:0 24px 60px -20px rgba(214,35,107,.5);
-  position:relative;animation:zoomIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  font-family:var(--sans);color:var(--ink);border-radius:26px;overflow:hidden;
+  position:relative;width:100%;max-width:430px;margin-inline:auto;
+  background:linear-gradient(155deg,#fff 0%,#FFF0F6 40%,#FFDCEB 100%);
+  border:1px solid rgba(255,143,190,.5);
+  box-shadow:0 30px 70px -24px rgba(214,35,107,.5), inset 0 1px 0 rgba(255,255,255,.9);
+  animation:zoomIn .5s cubic-bezier(.34,1.56,.64,1) both;
 }
-.bp-top{padding:1.2rem 1.3rem;background:rgba(255,255,255,.55);backdrop-filter:blur(8px)}
-.bp-brand{display:flex;align-items:center;justify-content:space-between;font-weight:800}
-.bp-brand .airline{font-family:var(--serif);font-weight:900;font-size:1.25rem;letter-spacing:.08em;display:inline-flex;align-items:center;gap:.4em}
-.bp-brand .airline .ic{width:1.1em;height:1.1em;color:var(--crimson)}
-.bp-perf{border-top:2.5px dashed rgba(42,15,29,.4);margin:0}
-.bp-main{padding:1.2rem 1.3rem;display:grid;gap:1rem}
-.bp-row{display:flex;justify-content:space-between;gap:1rem;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(42,15,29,.6)}
-.bp-row strong{display:block;font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink);margin-top:.15em}
-.bp-name{font-family:var(--serif);font-size:clamp(1.5rem,5vw,2.1rem);font-weight:900;letter-spacing:.02em;line-height:1.1}
-.bp-name small{display:block;font-family:var(--sans);font-size:.68rem;font-weight:800;letter-spacing:.2em;color:rgba(42,15,29,.55);margin-bottom:.2em}
-.bp-route{display:flex;align-items:center;gap:.9rem}
-.bp-route .pt{flex:1}
-.bp-route .arrow svg{width:26px;height:26px;color:var(--crimson);fill:currentColor;stroke:none;display:block}
-.bp-stub{padding:1rem 1.3rem;background:rgba(255,255,255,.5);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.bp-barcode{flex:1;height:44px;min-width:140px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 7px,transparent 7px 9px,var(--ink) 9px 12px,transparent 12px 15px);border-radius:4px;opacity:.85}
-.bp-promo{font-weight:800;font-size:.85rem;letter-spacing:.06em;color:var(--crimson)}
-.bp-note{font-size:.8rem;font-style:italic;color:rgba(42,15,29,.7);padding:0 1.3rem 1.2rem}
-/* Искрящиеся точки на талоне — SVG-звёздочки вместо эмодзи */
-.bp-sparkle{position:absolute;pointer-events:none;color:#fff;filter:drop-shadow(0 1px 4px rgba(214,35,107,.5));animation:floaty 3.2s ease-in-out infinite}
-.bp-sparkle svg{width:18px;height:18px;fill:currentColor;stroke:none}
-.bp-sparkle.s2{animation-delay:1.2s}.bp-sparkle.s2 svg{width:13px;height:13px}
-.bp-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.bp-glare{position:absolute;inset:-40%;pointer-events:none;z-index:2;
+  background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.5) 48%,transparent 56%);
+  mix-blend-mode:soft-light;animation:glareSweep 5.5s ease-in-out infinite}
+@keyframes glareSweep{0%,100%{transform:translateX(-28%)}50%{transform:translateX(28%)}}
+.bp-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;
+  padding:.85rem 1.1rem;background:linear-gradient(120deg,var(--ink),#5b1e3f 70%,#6b1d44);color:#FFEAF3;position:relative}
+.bp-head::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--neon),var(--gold),transparent)}
+.bp-airline{font-family:var(--serif);font-weight:900;font-size:1.15rem;letter-spacing:.1em;display:flex;align-items:center;gap:.45em;color:#fff}
+.bp-airline .ic{width:1.05em;height:1.05em;color:var(--neon)}
+.bp-sub{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,214,230,.75);margin-top:.2em}
+.bp-chip{font-family:var(--serif);font-weight:900;font-size:.8rem;line-height:1.1;text-align:center;
+  border:1px solid rgba(255,143,190,.5);border-radius:10px;padding:.35em .6em;color:var(--powder);letter-spacing:.08em}
+.bp-hero{display:grid;grid-template-columns:1fr auto 1fr;gap:.6rem;align-items:center;padding:1rem 1.1rem .8rem}
+.bp-from,.bp-to{min-width:0}
+.bp-to{text-align:right}
+.bp-from small,.bp-to small{display:block;font-size:.58rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:rgba(42,15,29,.5)}
+.bp-from b{display:block;font-family:var(--serif);font-size:clamp(1.5rem,6vw,1.9rem);font-weight:900;line-height:1.05;letter-spacing:.02em}
+.bp-to b{display:block;font-family:var(--serif);font-size:clamp(1.02rem,4.2vw,1.28rem);font-weight:900;line-height:1.15;margin-top:.05em}
+.bp-from span,.bp-to span{display:block;font-size:.62rem;color:rgba(42,15,29,.55);font-style:italic;margin-top:.15em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bp-flightpath{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding-top:1.1rem}
+.bp-flightpath .dot{width:6px;height:6px;border-radius:50%;background:var(--crimson)}
+.bp-flightpath .line{width:34px;height:0;border-top:1.5px dashed rgba(42,15,29,.4)}
+.bp-flightpath .planeicon{color:var(--hot);animation:floaty 3s ease-in-out infinite}
+.bp-flightpath .planeicon .ic{width:22px;height:22px}
+.bp-fields{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem .7rem;padding:.35rem 1.1rem .95rem}
+.bp-f{min-width:0}
+.bp-f span{display:block;font-size:.55rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(42,15,29,.48)}
+.bp-f strong{display:block;font-size:.82rem;font-weight:800;margin-top:.15em;line-height:1.25;overflow-wrap:anywhere}
+.bp-name{font-family:var(--serif);font-size:1.05rem !important;font-weight:900;letter-spacing:.02em}
+.bp-wide{grid-column:span 2}
+@media(max-width:420px){.bp-fields{grid-template-columns:repeat(2,1fr)}}
+.bp-cutline{display:flex;align-items:center;position:relative;height:0}
+.bp-cutline .dash{flex:1;margin:0 14px;border-top:2px dashed rgba(42,15,29,.35)}
+.bp-cutline .notch{position:absolute;top:-11px;width:22px;height:22px;border-radius:50%;background:#FFF0F6;border:1px solid rgba(255,143,190,.5)}
+.bp-cutline .notch.left{left:-11px}.bp-cutline .notch.right{right:-11px}
+.bp-stub{padding:.85rem 1.1rem;display:grid;gap:.5rem;justify-items:center;text-align:center;background:rgba(255,255,255,.6)}
+.bp-stub-info span{font-size:.55rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:rgba(42,15,29,.48)}
+.bp-stub-info strong{display:block;font-size:.9rem;font-weight:800;color:var(--crimson);letter-spacing:.06em}
+.bp-barcode{display:flex;align-items:flex-end;gap:2px;height:34px}
+.bp-barcode i{width:2px;height:60%;border-radius:1px;background:transparent}
+.bp-barcode i.on{height:100%;background:var(--ink)}
+.bp-code{font-size:.62rem;letter-spacing:.24em;font-weight:800;color:rgba(42,15,29,.55)}
+.bp-note{font-size:.72rem;font-style:italic;color:rgba(42,15,29,.65);text-align:center;padding:.3rem 1.2rem .95rem}
 
 .bp-actions{display:grid;gap:.7rem;grid-template-columns:1fr 1fr;margin-top:1.2rem}
 @media(max-width:480px){.bp-actions{grid-template-columns:1fr}}
+/* Компактный режим модального окна с талоном на телефоне:
+   весь билет помещается в экран без прокрутки */
+@media(max-width:480px){
+  #moodModalInner{padding:1.1rem}
+  #moodModalInner h3.h-section{font-size:1.25rem}
+  #moodModalInner .steps{gap:.4rem}
+  #moodModalInner .step-dot{font-size:.62rem;padding:.4em .7em}
+  #moodModalInner .field{margin-bottom:.9rem !important}
+  #moodModalInner .mood-grid{gap:.5rem}
+  #moodModalInner .mood-btn{padding:.6em .8em;font-size:.8rem}
+  #moodModalInner .mood-btn .ic{width:18px;height:18px}
+  .bp-actions{margin-top:.9rem;gap:.5rem}
+  .bp-actions .btn{height:46px;font-size:.9rem}
+}
 
 /* ---------- Лента пассажиров ---------- */
 .feed{list-style:none;display:grid;gap:.6rem;margin-top:1rem}
@@ -599,7 +692,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 
   <div class="container hero-content">
     <span class="kicker anim-fadeup"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Вылет немедленно · Возврат по желанию сердца</span>
-    <h1 class="h-display anim-fadeup d1" style="margin-top:1rem">Вогвояж</h1>
+    <h1 class="h-display glossy anim-fadeup d1" style="margin-top:1rem">Вогвояж</h1>
     <p class="hero-sub anim-fadeup d2">Авиакомпания, которой нет, но настроение настоящее.</p>
     <p class="hero-extra anim-fadeup d3">Билеты в закат, туры без обязательств и экстренный вылет из реальности.</p>
     <div class="hero-cta anim-fadeup d4">
@@ -610,6 +703,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
     <span class="badge-notreal anim-fadeup d5">Не настоящая авиакомпания. Настоящее желание уехать.</span>
   </div>
 
+  <div class="hero-side" aria-hidden="true">FW&nbsp;26 · <b>ROSE&nbsp;EDITION</b> · NO&nbsp;PLANS · JUST&nbsp;VIBES</div>
   <button class="sound-toggle no-print ripple-host" id="soundToggle" aria-label="Включить звук ролика" title="Звук вкл/выкл"></button>
   <div class="scroll-hint" aria-hidden="true">↓ листай красиво</div>
 </section>
@@ -624,6 +718,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 
 <!-- ================= ПОИСК БИЛЕТОВ (ФЕЙК) ================= -->
 <section class="section reveal no-print" id="tickets" aria-label="Поиск розовых рейсов">
+  <span class="section-num" aria-hidden="true">01</span>
   <div class="container">
     <div class="section-head">
       <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg> Билеты</span>
@@ -660,6 +755,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 
 <!-- ================= ТУРЫ ================= -->
 <section class="section reveal no-print wide-section" id="tours" aria-label="Туры Вогвояж">
+  <span class="section-num" aria-hidden="true">02</span>
   <div class="container">
     <div class="section-head">
       <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Туры</span>
@@ -669,7 +765,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 
     <div class="tours-grid">
       <article class="tour-card">
-        <div class="tour-visual v1" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M11 18h2"/><path d="m9.5 9.5 5 5m0-5-5 5"/></svg><span class="tour-sticker">хит</span></div>
+        <div class="tour-visual v1" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M11 18h2"/><path d="m9.5 9.5 5 5m0-5-5 5"/></svg><span class="tour-num">01</span><span class="tour-sticker">хит</span></div>
         <div class="tour-body">
           <h3>Отключи уведомления</h3>
           <p class="tour-desc">3 дня без рабочих чатов, 2 коктейля и один закат, который никто не фоткал для отчета.</p>
@@ -679,7 +775,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v2" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M8 2h8l-1 7a3.2 3.2 0 0 1-3 3 3.2 3.2 0 0 1-3-3z"/><path d="M12 12v7"/><path d="M8 21h8"/><path d="M6.5 5.5 5 4M17.5 5.5 19 4"/></svg><span class="tour-sticker">блеск</span></div>
+        <div class="tour-visual v2" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M8 2h8l-1 7a3.2 3.2 0 0 1-3 3 3.2 3.2 0 0 1-3-3z"/><path d="M12 12v7"/><path d="M8 21h8"/><path d="M6.5 5.5 5 4M17.5 5.5 19 4"/></svg><span class="tour-num">02</span><span class="tour-sticker">блеск</span></div>
         <div class="tour-body">
           <h3>Девичник в невесомости</h3>
           <p class="tour-desc">Шампанское, блеск для губ и полное отсутствие взрослых решений.</p>
@@ -689,7 +785,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v3" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/><path d="m10 15 4 3-4 3" transform="translate(0 -3)"/></svg><span class="tour-sticker">экспресс</span></div>
+        <div class="tour-visual v3" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/><path d="m10 15 4 3-4 3" transform="translate(0 -3)"/></svg><span class="tour-num">03</span><span class="tour-sticker">экспресс</span></div>
         <div class="tour-body">
           <h3>Сбежать от понедельника</h3>
           <p class="tour-desc">Экспресс-вылет туда, где дедлайны не ловят сигнал.</p>
@@ -699,7 +795,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v4" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.5 12 21 12 21z"/></svg><span class="tour-sticker">драма</span></div>
+        <div class="tour-visual v4" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.5 12 21 12 21z"/></svg><span class="tour-num">04</span><span class="tour-sticker">драма</span></div>
         <div class="tour-body">
           <h3>Красиво пострадать</h3>
           <p class="tour-desc">Драматичный закат, ветер в волосах и минимум объяснений.</p>
@@ -709,7 +805,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v5" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/><path d="m4 4 16 16"/></svg><span class="tour-sticker">секрет</span></div>
+        <div class="tour-visual v5" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/><path d="m4 4 16 16"/></svg><span class="tour-num">05</span><span class="tour-sticker">секрет</span></div>
         <div class="tour-body">
           <h3>Никому не говори</h3>
           <p class="tour-desc">Секретный маршрут для тех, кто хочет исчезнуть, но остаться в сторис.</p>
@@ -719,7 +815,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v6" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="m3 7 4.5 3L12 4l4.5 6L21 7l-1.8 11H4.8z"/></svg><span class="tour-sticker">premium</span></div>
+        <div class="tour-visual v6" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="m3 7 4.5 3L12 4l4.5 6L21 7l-1.8 11H4.8z"/></svg><span class="tour-num">06</span><span class="tour-sticker">premium</span></div>
         <div class="tour-body">
           <h3>Быть недоступной</h3>
           <p class="tour-desc">Премиальный тур для тех, кто официально не берет трубку.</p>
@@ -733,6 +829,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 
 <!-- ================= РОЛИК ================= -->
 <section class="section reveal no-print" id="commercial" aria-label="Рекламный ролик">
+  <span class="section-num" aria-hidden="true">03</span>
   <div class="container">
     <div class="section-head" style="max-width:720px">
       <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Ролик</span>
@@ -757,6 +854,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 
 <!-- ================= QR-БЛОК ================= -->
 <section class="section reveal no-print" id="qr" aria-label="QR-интерактив">
+  <span class="section-num" aria-hidden="true">04</span>
   <div class="container">
     <div class="qr-block">
       <div>
@@ -1017,13 +1115,18 @@ document.addEventListener("pointerdown", e => {
   r.addEventListener("animationend", () => r.remove());
 });
 
-/* ---------- Glow-блик за курсором на карточках туров ---------- */
+/* ---------- Glow-блик за курсором + лёгкий 3D-наклон карточек туров ---------- */
 document.querySelectorAll(".tour-card").forEach(card => {
   card.addEventListener("pointermove", e => {
     const rect = card.getBoundingClientRect();
-    card.style.setProperty("--mx", ((e.clientX-rect.left)/rect.width*100).toFixed(1)+"%");
-    card.style.setProperty("--my", ((e.clientY-rect.top)/rect.height*100).toFixed(1)+"%");
+    const px = (e.clientX-rect.left)/rect.width, py = (e.clientY-rect.top)/rect.height;
+    card.style.setProperty("--mx", (px*100).toFixed(1)+"%");
+    card.style.setProperty("--my", (py*100).toFixed(1)+"%");
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+      card.style.transform = `translateY(-10px) perspective(900px) rotateX(${((.5-py)*4).toFixed(2)}deg) rotateY(${((px-.5)*5).toFixed(2)}deg)`;
+    }
   });
+  card.addEventListener("pointerleave", () => { card.style.transform = ""; });
 });
 
 /* ---------- Модальные окна ---------- */
@@ -1070,19 +1173,43 @@ function openMoodFlow(){
 
 /* currentTicket, generateTicket(moodName), renderTicket — в shared.js */
 
-/* ---------- Сохранить талон (html2canvas + fallback на печать) ---------- */
+/* ---------- Сохранить талон: полностью, а не «половина» ----------
+   html2canvas с точными размерами карточки + blob-скачивание
+   (dataURL-ссылки мобильные браузеры обрезают/блокируют). */
+async function saveBlobAsFile(blob, filename){
+  if (window.showSaveFilePicker){
+    try {
+      const handle = await window.showSaveFilePicker({suggestedName:filename, types:[{description:"PNG", accept:{"image/png":[".png"]}}]});
+      const w = await handle.createWritable();
+      await w.write(blob); await w.close();
+      return true;
+    } catch(e){ if (e && e.name === "AbortError") return false; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  return true;
+}
+
 $("#saveTicket").addEventListener("click", async () => {
   const card = $("#bpCard");
   if (!card) return;
   Stats.inc("tickets");
   try {
     if (typeof html2canvas !== "function") throw new Error("html2canvas недоступен");
-    const canvas = await html2canvas(card, {backgroundColor:null, scale:2});
-    const a = document.createElement("a");
-    a.download = "vogvoyazh-boarding-pass.png";
-    a.href = canvas.toDataURL("image/png");
-    a.click();
-    showToast("Талон сохранён. Красота должна быть при себе.");
+    showToast("Упаковываем красоту…");
+    const rect = card.getBoundingClientRect();
+    const canvas = await html2canvas(card, {
+      backgroundColor: "#FFF6F8", scale: 3, useCORS: true, logging: false,
+      width: Math.ceil(rect.width), height: Math.ceil(rect.height),
+      windowWidth: Math.ceil(rect.width), windowHeight: Math.ceil(rect.height)
+    });
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    if (!blob) throw new Error("canvas пуст");
+    const ok = await saveBlobAsFile(blob, "vogvoyazh-boarding-pass.png");
+    if (ok) showToast("Талон сохранён. Красота должна быть при себе.");
   } catch(err) {
     // Fallback: если библиотека не загрузилась (нет сети) — предлагаем печать
     showToast("Сохранение в картинку недоступно — открываю печать.");
@@ -1199,8 +1326,27 @@ if (!prefersReduced && "IntersectionObserver" in window){
     entries.forEach(en => { if (en.isIntersecting){ en.target.classList.add("visible"); io.unobserve(en.target); } });
   }, {threshold:.12});
   document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+  /* Карточки туров появляются по очереди, когда сетка в зоне видимости */
+  const tgIO = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting){ en.target.classList.add("visible"); tgIO.unobserve(en.target); } });
+  }, {threshold:.08});
+  document.querySelectorAll(".tours-grid").forEach(el => tgIO.observe(el));
 } else {
   document.querySelectorAll(".reveal").forEach(el => el.classList.add("visible"));
+  document.querySelectorAll(".tours-grid").forEach(el => el.classList.add("visible"));
+}
+
+/* Лёгкий параллакс hero-контента при скролле (desktop, уважает reduced-motion) */
+if (!prefersReduced && matchMedia("(min-width:900px)").matches){
+  const heroContent = document.querySelector(".hero-content");
+  let ticking = false;
+  addEventListener("scroll", () => {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(() => {
+      if (scrollY < innerHeight) heroContent.style.transform = `translateY(${(scrollY*0.18).toFixed(1)}px)`;
+      ticking = false;
+    });
+  }, {passive:true});
 }
 </script>
 </body>

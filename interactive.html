@@ -18,6 +18,21 @@
 <style>
 /* ---------- Полноэкранная страница интерактива ---------- */
 .interactive-page{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;padding-bottom:2rem}
+/* На телефоне — компактный режим: шрифты и отступы уменьшены,
+   чтобы талон целиком помещался в экран и скачивался полностью */
+@media(max-width:480px){
+  html{font-size:15px}
+  .interactive-card{padding:1.1rem;border-radius:22px}
+  .interactive-card h1{font-size:1.35rem;margin-top:.5rem}
+  .steps{gap:.4rem}
+  .step-dot{font-size:.62rem;padding:.4em .7em}
+  .field{margin-bottom:.9rem !important}
+  #moodGrid{gap:.5rem}
+  .mood-btn{padding:.6em .8em;font-size:.8rem}
+  .mood-btn .ic{width:18px;height:18px}
+  .ticket-actions{margin-top:.9rem;gap:.5rem}
+  .ticket-actions .btn{height:46px;font-size:.9rem}
+}
 .interactive-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 0}
 .interactive-body{flex:1;width:min(680px,94%);margin-inline:auto;display:flex;flex-direction:column;justify-content:center;padding-block:1rem}
 .interactive-card{
@@ -31,6 +46,9 @@
 @media(max-width:520px){.ticket-actions{grid-template-columns:1fr}}
 .ticket-actions .btn{width:100%}
 .field{margin-bottom:0}
+/* Талон на странице интерактива — компактный: помещается целиком,
+   чтобы «Сохранить талон» скачивал весь билет, а не половину */
+#boardingPassBox{display:flex;justify-content:center}
 </style>
 </head>
 <body>
@@ -123,18 +141,46 @@ function showTicket(moodName){
 /* Подсветка шага «Настроение» при фокусе имени — лёгкая микродинамика */
 $("#guestName").addEventListener("focus", () => setSteps(1));
 
-/* ---------- Сохранить талон (html2canvas + fallback на печать) ---------- */
+/* ---------- Сохранить талон: полностью, а не «половина» ----------
+   1) Рисуем карточку через html2canvas с точными размерами (без обрезки).
+   2) Сохраняем через showSaveFilePicker (Chrome/Edge Android+Desktop),
+      иначе — blob + ссылку (iOS Safari корректно скачивает blob, а не dataURL).
+   3) Если canvas недоступен — fallback: печать. */
+async function saveBlobAsFile(blob, filename){
+  if (window.showSaveFilePicker){
+    try {
+      const handle = await window.showSaveFilePicker({suggestedName:filename, types:[{description:"PNG", accept:{"image/png":[".png"]}}]});
+      const w = await handle.createWritable();
+      await w.write(blob); await w.close();
+      return true;
+    } catch(e){ if (e && e.name === "AbortError") return false; /* прочее — пробуем ссылку */ }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  return true;
+}
+
 $("#saveTicket").addEventListener("click", async () => {
   const card = $("#bpCard");
   if (!card) return;
+  Stats.inc("tickets");
   try {
     if (typeof html2canvas !== "function") throw new Error("html2canvas недоступен");
-    const canvas = await html2canvas(card, {backgroundColor:null, scale:2});
-    const a = document.createElement("a");
-    a.download = "vogvoyazh-boarding-pass.png";
-    a.href = canvas.toDataURL("image/png");
-    a.click();
-    showToast("Талон сохранён. Красота должна быть при себе.");
+    showToast("Упаковываем красоту…");
+    /* width/height = CSS-размер карточки целиком → картинка никогда не обрезается */
+    const rect = card.getBoundingClientRect();
+    const canvas = await html2canvas(card, {
+      backgroundColor: "#FFF6F8", scale: 3, useCORS: true,
+      logging: false, width: Math.ceil(rect.width), height: Math.ceil(rect.height),
+      windowWidth: Math.ceil(rect.width), windowHeight: Math.ceil(rect.height)
+    });
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    if (!blob) throw new Error("canvas пуст");
+    const ok = await saveBlobAsFile(blob, "vogvoyazh-boarding-pass.png");
+    if (ok) showToast("Талон сохранён. Красота должна быть при себе.");
   } catch(err) {
     showToast("Сохранение в картинку недоступно — открываю печать.");
     setTimeout(() => window.print(), 900);
