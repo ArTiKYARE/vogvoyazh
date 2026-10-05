@@ -80,13 +80,45 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .muted{color:rgba(42,15,29,.62)}
 .tiny-note{font-size:.78rem;color:rgba(42,15,29,.5);font-style:italic}
 
-/* ---------- Кнопки ---------- */
+/* ---------- Иконки (inline SVG вместо эмодзи) ---------- */
+.ic{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:-.2em}
+.ic-fill{fill:currentColor;stroke:none}
+
+/* ---------- Ripple-волна на кликах (shadcn/ui-паттерн) ---------- */
+.ripple-host{position:relative;overflow:hidden;isolation:isolate}
+.ripple{position:absolute;border-radius:50%;transform:scale(0);pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(255,255,255,.55),rgba(255,255,255,0) 70%);
+  animation:rippleAnim .6s ease-out forwards}
+.ripple-dark{background:radial-gradient(circle,rgba(255,46,147,.28),rgba(255,46,147,0) 70%)}
+@keyframes rippleAnim{to{transform:scale(2.6);opacity:0}}
+
+/* ---------- Shimmer для primary-кнопок ---------- */
+.shine::before{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;z-index:1;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);
+  transform:skewX(-18deg);transition:left .65s ease;pointer-events:none}
+.shine:hover::before{left:130%}
+
+/* ---------- Анимации появления ---------- */
+@keyframes fadeUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes zoomIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulseSoft{0%,100%{box-shadow:0 0 0 0 rgba(255,46,147,.35)}50%{box-shadow:0 0 0 12px rgba(255,46,147,0)}}
+.anim-fadeup{animation:fadeUp .9s cubic-bezier(.22,1,.36,1) both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}.d4{animation-delay:.4s}.d5{animation-delay:.55s}
+
+/* ---------- Кнопки (shadcn-style: точная высота, ring при фокусе, active-scale) ---------- */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:.55em;
-  padding:.95em 1.7em;border-radius:999px;font-weight:800;font-size:.95rem;
-  transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, background .25s;
+  height:44px;padding:0 1.6em;border-radius:999px;font-weight:800;font-size:.92rem;
+  letter-spacing:.01em;position:relative;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, background .25s, border-color .25s, color .25s;
   will-change:transform;white-space:nowrap;
 }
+.btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--hot)}
+.btn:active{transform:scale(.96)}
+.btn > *{position:relative;z-index:1}
 .btn-primary{
   background:linear-gradient(120deg,var(--hot),var(--neon));color:#fff;
   box-shadow:var(--shadow-pink);
@@ -99,7 +131,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .btn-ghost:hover{transform:translateY(-3px);background:rgba(255,214,230,.75)}
 .btn-outline{border:1.5px solid var(--hot);color:var(--hot);background:transparent}
 .btn-outline:hover{background:var(--hot);color:#fff;transform:translateY(-3px)}
-.btn-sm{padding:.65em 1.2em;font-size:.85rem}
+.btn-sm{height:38px;padding:0 1.15em;font-size:.85rem}
 
 /* ---------- Header ---------- */
 .header{
@@ -138,7 +170,9 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .cloud.c2{width:260px;height:90px;top:48%;left:-30%;animation-duration:52s;animation-delay:-14s;opacity:.7}
 .cloud.c3{width:420px;height:140px;top:72%;left:-35%;animation-duration:64s;animation-delay:-30s;opacity:.55}
 @keyframes drift{from{transform:translateX(0)}to{transform:translateX(160vw)}}
-.plane{position:absolute;top:22%;left:-10%;font-size:2.4rem;animation:fly 22s linear infinite;filter:drop-shadow(0 6px 14px rgba(214,35,107,.35))}
+/* Самолёт placeholder'а — SVG вместо эмодзи */
+.plane{position:absolute;top:22%;left:-10%;width:56px;color:#fff;animation:fly 22s linear infinite;filter:drop-shadow(0 6px 14px rgba(214,35,107,.45))}
+.plane .ic{width:56px;height:56px}
 @keyframes fly{
   0%{transform:translate(0,0) rotate(-6deg)}
   50%{transform:translate(60vw,-8vh) rotate(-4deg)}
@@ -205,7 +239,14 @@ h1,h2,h3,.serif{font-family:var(--serif)}
   transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .35s;
 }
 .tour-card:hover{transform:translateY(-8px) rotate(-.4deg);box-shadow:0 30px 70px -22px rgba(255,46,147,.5)}
-.tour-visual{height:150px;position:relative;display:grid;place-items:center;font-size:2.6rem}
+/* Блик на карточке при наведении (shadcn-style glow) */
+.tour-card::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(255,95,193,.18),transparent 65%)}
+.tour-card:hover::after{opacity:1}
+.tour-visual{height:150px;position:relative;display:grid;place-items:center;color:rgba(255,255,255,.92)}
+.tour-visual .ic{width:44px;height:44px;stroke-width:1.5;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.tour-card:hover .tour-visual .ic{transform:scale(1.18) rotate(-6deg)}
+.tour-visual::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 20% 0%,rgba(255,255,255,.35),transparent 60%)}
 /* ЗАМЕНИТЬ CSS-градиенты карточек на реальные изображения туров при необходимости */
 .tour-visual.v1{background:linear-gradient(135deg,#FFD6E6,#FF8FBE)}
 .tour-visual.v2{background:linear-gradient(135deg,#FF8FBE,#FF2E93)}
@@ -287,28 +328,36 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 
 /* ---------- Интерактив (шаги) ---------- */
 .steps{display:flex;gap:.5rem;margin-bottom:1.4rem;flex-wrap:wrap}
-.step-dot{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(42,15,29,.4);border:1.5px solid rgba(255,143,190,.5);border-radius:999px;padding:.35em 1em}
-.step-dot.active{color:#fff;background:linear-gradient(120deg,var(--hot),var(--neon));border-color:transparent}
+.step-dot{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(42,15,29,.4);border:1.5px solid rgba(255,143,190,.5);border-radius:999px;padding:.35em 1em;transition:all .3s}
+.step-dot.active{color:#fff;background:linear-gradient(120deg,var(--hot),var(--neon));border-color:transparent;animation:zoomIn .35s ease both}
 .mood-grid{display:grid;gap:.7rem;grid-template-columns:1fr}
 @media(min-width:520px){.mood-grid{grid-template-columns:1fr 1fr}}
 .mood-btn{
   text-align:left;padding:1em 1.2em;border-radius:18px;font-weight:800;font-size:1rem;
   background:rgba(255,255,255,.8);border:1.5px solid rgba(255,143,190,.5);
-  display:flex;align-items:center;gap:.7em;transition:all .25s;
+  display:flex;align-items:center;gap:.7em;transition:transform .25s cubic-bezier(.34,1.56,.64,1), border-color .25s, background .25s, box-shadow .25s;
+  position:relative;
 }
-.mood-btn:hover{border-color:var(--hot);background:var(--powder);transform:translateX(4px)}
-.mood-btn .emoji{font-size:1.4rem}
+.mood-btn:hover{border-color:var(--hot);background:var(--powder);transform:translateX(4px);box-shadow:0 10px 28px -12px rgba(255,46,147,.4)}
+.mood-btn:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--hot)}
+.mood-btn:active{transform:scale(.97)}
+.mood-btn .ic{width:22px;height:22px;color:var(--hot)}
+/* Появление кнопок настроения по очереди */
+.mood-btn{animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+.mood-btn:nth-child(2){animation-delay:.06s}.mood-btn:nth-child(3){animation-delay:.12s}
+.mood-btn:nth-child(4){animation-delay:.18s}.mood-btn:nth-child(5){animation-delay:.24s}
 
 /* ---------- Посадочный талон ---------- */
 .boarding-pass{
   font-family:var(--sans);color:var(--ink);border-radius:22px;overflow:hidden;
   background:linear-gradient(135deg,#FFD6E6 0%,#FFB8D4 45%,#FF8FBE 100%);
   box-shadow:0 24px 60px -20px rgba(214,35,107,.5);
-  position:relative;
+  position:relative;animation:zoomIn .5s cubic-bezier(.34,1.56,.64,1) both;
 }
-.bp-top{padding:1.2rem 1.3rem;background:rgba(255,255,255,.55);backdrop-filter:blur(8px);}
+.bp-top{padding:1.2rem 1.3rem;background:rgba(255,255,255,.55);backdrop-filter:blur(8px)}
 .bp-brand{display:flex;align-items:center;justify-content:space-between;font-weight:800}
-.bp-brand .airline{font-family:var(--serif);font-weight:900;font-size:1.25rem;letter-spacing:.08em}
+.bp-brand .airline{font-family:var(--serif);font-weight:900;font-size:1.25rem;letter-spacing:.08em;display:inline-flex;align-items:center;gap:.4em}
+.bp-brand .airline .ic{width:1.1em;height:1.1em;color:var(--crimson)}
 .bp-perf{border-top:2.5px dashed rgba(42,15,29,.4);margin:0}
 .bp-main{padding:1.2rem 1.3rem;display:grid;gap:1rem}
 .bp-row{display:flex;justify-content:space-between;gap:1rem;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(42,15,29,.6)}
@@ -317,12 +366,15 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .bp-name small{display:block;font-family:var(--sans);font-size:.68rem;font-weight:800;letter-spacing:.2em;color:rgba(42,15,29,.55);margin-bottom:.2em}
 .bp-route{display:flex;align-items:center;gap:.9rem}
 .bp-route .pt{flex:1}
-.bp-route .arrow{font-size:1.4rem;color:var(--crimson)}
+.bp-route .arrow svg{width:26px;height:26px;color:var(--crimson);fill:currentColor;stroke:none;display:block}
 .bp-stub{padding:1rem 1.3rem;background:rgba(255,255,255,.5);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
 .bp-barcode{flex:1;height:44px;min-width:140px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 7px,transparent 7px 9px,var(--ink) 9px 12px,transparent 12px 15px);border-radius:4px;opacity:.85}
 .bp-promo{font-weight:800;font-size:.85rem;letter-spacing:.06em;color:var(--crimson)}
 .bp-note{font-size:.8rem;font-style:italic;color:rgba(42,15,29,.7);padding:0 1.3rem 1.2rem}
-.bp-sparkle{position:absolute;font-size:1.1rem;pointer-events:none}
+/* Искрящиеся точки на талоне — SVG-звёздочки вместо эмодзи */
+.bp-sparkle{position:absolute;pointer-events:none;color:#fff;filter:drop-shadow(0 1px 4px rgba(214,35,107,.5));animation:floaty 3.2s ease-in-out infinite}
+.bp-sparkle svg{width:18px;height:18px;fill:currentColor;stroke:none}
+.bp-sparkle.s2{animation-delay:1.2s}.bp-sparkle.s2 svg{width:13px;height:13px}
 .bp-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
 
 .bp-actions{display:grid;gap:.7rem;grid-template-columns:1fr 1fr;margin-top:1.2rem}
@@ -370,6 +422,16 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .footer .love{margin-top:1rem;font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--crimson)}
 .footer .links{display:flex;gap:1.2rem;margin-top:1.4rem;font-size:.8rem;font-weight:700;flex-wrap:wrap}
 .footer .links a:hover{color:var(--hot)}
+/* Live-статистика в футере (реальные клики, localStorage) */
+.live-stats{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.4rem}
+.live-chip{
+  display:inline-flex;align-items:center;gap:.5em;font-size:.78rem;font-weight:800;
+  letter-spacing:.04em;color:var(--crimson);background:rgba(255,255,255,.7);
+  border:1px solid rgba(255,143,190,.5);border-radius:999px;padding:.45em 1em;
+}
+.live-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--hot);animation:pulseSoft 1.8s ease-in-out infinite}
+.live-chip b{font-family:var(--serif);font-size:.95rem;color:var(--ink)}
+.live-chip .ic{width:14px;height:14px}
 
 /* ---------- Анимации появления секций ---------- */
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1)}
@@ -397,7 +459,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <!-- ================= HEADER ================= -->
 <header class="header no-print">
   <div class="container header-inner">
-    <a class="logo" href="#top"><span class="spark">✈</span> ВОГВОЯЖ</a>
+    <a class="logo" href="#top"><span class="spark"><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></span> ВОГВОЯЖ</a>
     <nav class="nav" aria-label="Основная навигация">
       <a href="#tickets">Билеты</a>
       <a href="#tours">Туры</a>
@@ -405,8 +467,8 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       <a href="#qr">QR-вылет</a>
       <a href="#moods" onclick="openModal('moodModal')">Настроение</a>
     </nav>
-    <a class="btn btn-primary btn-sm no-print" href="#qr" id="headerCta">Улететь красиво ✨</a>
-    <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false">☰</button>
+    <a class="btn btn-primary btn-sm ripple-host shine no-print" href="#qr" id="headerCta">Улететь красиво</a>
+    <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   </div>
   <div class="mobile-menu no-print" id="mobileMenu">
     <a href="#tickets">Билеты</a>
@@ -414,7 +476,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
     <a href="#commercial">Ролик</a>
     <a href="#qr">QR-вылет</a>
     <a href="#" data-open-mood>Настроение</a>
-    <a class="btn btn-primary" style="margin-top:.6rem" href="#qr">Улететь красиво ✨</a>
+    <a class="btn btn-primary ripple-host shine" style="margin-top:.6rem" href="#qr">Улететь красиво</a>
   </div>
 </header>
 
@@ -430,32 +492,32 @@ h1,h2,h3,.serif{font-family:var(--serif)}
     <!-- Placeholder: розовый закат с облаками и самолётом (показывается, если видео не загрузилось) -->
     <div class="hero-fallback" id="heroFallback">
       <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
-      <div class="plane">✈️</div>
+      <div class="plane"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></div>
     </div>
   </div>
 
   <div class="container hero-content">
-    <span class="kicker">✦ Вылет немедленно · Возврат по желанию сердца</span>
-    <h1 class="h-display" style="margin-top:1rem">Вогвояж</h1>
-    <p class="hero-sub">Авиакомпания, которой нет, но настроение настоящее.</p>
-    <p class="hero-extra">Билеты в закат, туры без обязательств и экстренный вылет из реальности.</p>
-    <div class="hero-cta">
-      <a class="btn btn-primary" href="#tickets">Купить билет в нормальную жизнь 💅</a>
-      <a class="btn btn-ghost" href="#tours">Выбрать тур</a>
-      <a class="btn btn-outline" href="#commercial">Просто посмотреть красоту</a>
+    <span class="kicker anim-fadeup"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Вылет немедленно · Возврат по желанию сердца</span>
+    <h1 class="h-display anim-fadeup d1" style="margin-top:1rem">Вогвояж</h1>
+    <p class="hero-sub anim-fadeup d2">Авиакомпания, которой нет, но настроение настоящее.</p>
+    <p class="hero-extra anim-fadeup d3">Билеты в закат, туры без обязательств и экстренный вылет из реальности.</p>
+    <div class="hero-cta anim-fadeup d4">
+      <a class="btn btn-primary ripple-host shine" href="#tickets" data-track="hero_life">Купить билет в нормальную жизнь</a>
+      <a class="btn btn-ghost ripple-host" href="#tours" data-track="hero_tours">Выбрать тур</a>
+      <a class="btn btn-outline ripple-host" href="#commercial" data-track="hero_beauty">Просто посмотреть красоту</a>
     </div>
-    <span class="badge-notreal">🎀 Не настоящая авиакомпания. Настоящее желание уехать.</span>
+    <span class="badge-notreal anim-fadeup d5">Не настоящая авиакомпания. Настоящее желание уехать.</span>
   </div>
 
-  <button class="sound-toggle no-print" id="soundToggle" aria-label="Включить звук ролика" title="Звук вкл/выкл">🔇</button>
+  <button class="sound-toggle no-print ripple-host" id="soundToggle" aria-label="Включить звук ролика" title="Звук вкл/выкл"></button>
   <div class="scroll-hint" aria-hidden="true">↓ листай красиво</div>
 </section>
 
 <!-- ================= MARQUEE ================= -->
 <div class="marquee no-print" aria-hidden="true">
   <div class="marquee-track">
-    <span>✦ Оплата настроением</span><span>💄 Багаж: одно хорошее настроение</span><span>✈ Мы перевозим самочувствие</span><span>🌅 Билет в розовую реальность</span><span>💋 Не звоните. Мы в закате.</span>
-    <span>✦ Оплата настроением</span><span>💄 Багаж: одно хорошее настроение</span><span>✈ Мы перевозим самочувствие</span><span>🌅 Билет в розовую реальность</span><span>💋 Не звоните. Мы в закате.</span>
+    <span>Оплата настроением</span><span>Багаж: одно хорошее настроение</span><span>Мы перевозим самочувствие</span><span>Билет в розовую реальность</span><span>Не звоните. Мы в закате.</span>
+    <span>Оплата настроением</span><span>Багаж: одно хорошее настроение</span><span>Мы перевозим самочувствие</span><span>Билет в розовую реальность</span><span>Не звоните. Мы в закате.</span>
   </div>
 </div>
 
@@ -463,7 +525,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <section class="section reveal no-print" id="tickets" aria-label="Поиск розовых рейсов">
   <div class="container">
     <div class="section-head">
-      <span class="kicker">✈ Билеты</span>
+      <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg> Билеты</span>
       <h2 class="h-section">Найди свой розовый рейс</h2>
       <p class="muted">Форма красивая. Рейсов нет. Желание уехать — принимаем с уважением.</p>
     </div>
@@ -488,7 +550,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
         </div>
       </div>
       <div class="search-actions">
-        <button class="btn btn-primary" type="submit">Найти розовый рейс 🔍</button>
+        <button class="btn btn-primary ripple-host shine" type="submit">Найти розовый рейс</button>
         <span class="tiny-note">* никакие данные никуда не летят. Кроме как в ваше воображение.</span>
       </div>
     </form>
@@ -499,69 +561,69 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <section class="section reveal no-print" id="tours" aria-label="Туры Вогвояж">
   <div class="container">
     <div class="section-head">
-      <span class="kicker">🌅 Туры</span>
+      <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Туры</span>
       <h2 class="h-section">Туры без обязательств</h2>
       <p class="muted">Мы не предлагаем услуги. Мы предлагаем состояния. Держись подальше от понедельника.</p>
     </div>
 
     <div class="tours-grid">
       <article class="tour-card">
-        <div class="tour-visual v1" aria-hidden="true">📵<span class="tour-sticker">хит</span></div>
+        <div class="tour-visual v1" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M11 18h2"/><path d="m9.5 9.5 5 5m0-5-5 5"/></svg><span class="tour-sticker">хит</span></div>
         <div class="tour-body">
           <h3>Отключи уведомления</h3>
           <p class="tour-desc">3 дня без рабочих чатов, 2 коктейля и один закат, который никто не фоткал для отчета.</p>
           <p class="tour-price">3 заката <small>опция «расслабить плечи» включена</small></p>
-          <button class="btn btn-primary btn-sm" data-book>Забронировать закат 🍸</button>
+          <button class="btn btn-primary btn-sm ripple-host shine" data-book data-tour="Отключи уведомления">Забронировать закат</button>
         </div>
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v2" aria-hidden="true">💋<span class="tour-sticker">блеск</span></div>
+        <div class="tour-visual v2" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M8 2h8l-1 7a3.2 3.2 0 0 1-3 3 3.2 3.2 0 0 1-3-3z"/><path d="M12 12v7"/><path d="M8 21h8"/><path d="M6.5 5.5 5 4M17.5 5.5 19 4"/></svg><span class="tour-sticker">блеск</span></div>
         <div class="tour-body">
           <h3>Девичник в невесомости</h3>
           <p class="tour-desc">Шампанское, блеск для губ и полное отсутствие взрослых решений.</p>
           <p class="tour-price">12 поцелуев <small>чаевые — комплиментами</small></p>
-          <button class="btn btn-primary btn-sm" data-book>Забронировать закат 🥂</button>
+          <button class="btn btn-primary btn-sm ripple-host shine" data-book data-tour="Девичник в невесомости">Забронировать закат</button>
         </div>
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v3" aria-hidden="true">🗓<span class="tour-sticker">экспресс</span></div>
+        <div class="tour-visual v3" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/><path d="m10 15 4 3-4 3" transform="translate(0 -3)"/></svg><span class="tour-sticker">экспресс</span></div>
         <div class="tour-body">
           <h3>Сбежать от понедельника</h3>
           <p class="tour-desc">Экспресс-вылет туда, где дедлайны не ловят сигнал.</p>
           <p class="tour-price">одно хорошее настроение <small>+ скидка на будильник</small></p>
-          <button class="btn btn-primary btn-sm" data-book>Забронировать закат 🏃‍♀️</button>
+          <button class="btn btn-primary btn-sm ripple-host shine" data-book data-tour="Сбежать от понедельника">Забронировать закат</button>
         </div>
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v4" aria-hidden="true">🌹<span class="tour-sticker">драма</span></div>
+        <div class="tour-visual v4" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.5 12 21 12 21z"/></svg><span class="tour-sticker">драма</span></div>
         <div class="tour-body">
           <h3>Красиво пострадать</h3>
           <p class="tour-desc">Драматичный закат, ветер в волосах и минимум объяснений.</p>
           <p class="tour-price">2 коктейля и тишина <small>слезы — бесплатно</small></p>
-          <button class="btn btn-primary btn-sm" data-book>Забронировать закат 🎭</button>
+          <button class="btn btn-primary btn-sm ripple-host shine" data-book data-tour="Красиво пострадать">Забронировать закат</button>
         </div>
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v5" aria-hidden="true">🤫<span class="tour-sticker">секрет</span></div>
+        <div class="tour-visual v5" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/><path d="m4 4 16 16"/></svg><span class="tour-sticker">секрет</span></div>
         <div class="tour-body">
           <h3>Никому не говори</h3>
           <p class="tour-desc">Секретный маршрут для тех, кто хочет исчезнуть, но остаться в сторис.</p>
           <p class="tour-price">бесплатно, если очень хочется <small>маршрут сообщим шёпотом</small></p>
-          <button class="btn btn-primary btn-sm" data-book>Забронировать закат 🕶</button>
+          <button class="btn btn-primary btn-sm ripple-host shine" data-book data-tour="Никому не говори">Забронировать закат</button>
         </div>
       </article>
 
       <article class="tour-card">
-        <div class="tour-visual v6" aria-hidden="true">💅<span class="tour-sticker">premium</span></div>
+        <div class="tour-visual v6" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="m3 7 4.5 3L12 4l4.5 6L21 7l-1.8 11H4.8z"/></svg><span class="tour-sticker">premium</span></div>
         <div class="tour-body">
           <h3>Быть недоступной</h3>
           <p class="tour-desc">Премиальный тур для тех, кто официально не берет трубку.</p>
           <p class="tour-price">3 секрета и недосказанность <small>VIP-режим «прочитаю позже»</small></p>
-          <button class="btn btn-primary btn-sm" data-book>Забронировать закат 📴</button>
+          <button class="btn btn-primary btn-sm ripple-host shine" data-book data-tour="Быть недоступной">Забронировать закат</button>
         </div>
       </article>
     </div>
@@ -572,7 +634,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <section class="section reveal no-print" id="commercial" aria-label="Рекламный ролик">
   <div class="container">
     <div class="section-head" style="max-width:720px">
-      <span class="kicker">🎬 Ролик</span>
+      <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Ролик</span>
       <h2 class="h-section">Смотри, как выглядит побег из реальности</h2>
       <p class="muted">Вогвояж не обещает перелет. Мы обещаем, что вам станет красивее.</p>
     </div>
@@ -583,12 +645,12 @@ h1,h2,h3,.serif{font-family:var(--serif)}
         <source src="/assets/vogvoyazh-commercial.mp4" type="video/mp4">
       </video>
       <div class="video-poster" id="videoPoster">
-        <div style="font-size:3rem">🎞️</div>
+        <svg class="ic" style="width:52px;height:52px;margin-inline:auto" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 8h20M7 4v4M12 4v4M17 4v4"/><path d="m10.6 13.4 3.6 2.1-3.6 2.1z" fill="currentColor" stroke="none"/></svg>
         <p style="font-family:var(--serif);font-size:1.3rem;font-style:italic">Скоро здесь будет красота.<br>Пока — просто представь.</p>
         <span class="tiny-note" style="color:rgba(255,214,230,.7)">/assets/vogvoyazh-commercial.mp4</span>
       </div>
     </div>
-    <p class="video-caption">Актеры не летали. Но очень хотели. 💋</p>
+    <p class="video-caption">Актеры не летали. Но очень хотели.</p>
   </div>
 </section>
 
@@ -597,14 +659,14 @@ h1,h2,h3,.serif{font-family:var(--serif)}
   <div class="container">
     <div class="qr-block">
       <div>
-        <span class="kicker">🛫 QR-вылет</span>
+        <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg> QR-вылет</span>
         <h2 class="h-section" style="margin-top:.7rem">Экстренный вылет из зала</h2>
         <p class="muted" style="margin-top:.8rem">Отсканируй код, выбери настроение и получи посадочный талон в розовую мечту.</p>
         <ul class="qr-notes" style="list-style:none;margin:1.2rem 0;display:grid;gap:.5rem;font-weight:700">
-          <li>✦ Не покупай билет. Выбери настроение.</li>
-          <li>✦ Улети из зала за 10 секунд.</li>
+          <li><svg class="ic ic-fill" style="width:.9em;height:.9em;color:var(--hot)" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Не покупай билет. Выбери настроение.</li>
+          <li><svg class="ic ic-fill" style="width:.9em;height:.9em;color:var(--hot)" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Улети из зала за 10 секунд.</li>
         </ul>
-        <button class="btn btn-primary" data-open-mood>Открыть интерактив без QR 📱</button>
+        <button class="btn btn-primary ripple-host shine" data-open-mood data-track="qr_open">Открыть интерактив без QR</button>
         <p class="tiny-note" style="margin-top:.8rem">Для ведущих: ссылка на интерактив — <code>#qr-interactive</code>, табло — <code>#board</code>.</p>
       </div>
 
@@ -639,7 +701,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
             </g>
           </svg>
         </div>
-        <p class="qr-note">📲 Наведи камеру. Улети красиво.</p>
+        <p class="qr-note">Наведи камеру. Улети красиво.</p>
       </div>
     </div>
   </div>
@@ -649,10 +711,10 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <section class="section reveal no-print" id="moods" aria-label="Настроения" style="padding-top:0">
   <div class="container">
     <div class="section-head" style="max-width:760px">
-      <span class="kicker">💗 Настроение</span>
+      <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.5 12 21 12 21z"/></svg> Настроение</span>
       <h2 class="h-section">Какое у тебя сегодня настроение для вылета?</h2>
       <p class="muted">«Расслабиться», «Хочу драмы», «Девичник», «Сбежать от понедельника» или «Быть недоступной». Любое — повод улететь.</p>
-      <div style="margin-top:1.2rem"><button class="btn btn-primary" data-open-mood>Выбрать настроение ✨</button></div>
+      <div style="margin-top:1.2rem"><button class="btn btn-primary ripple-host shine" data-open-mood data-track="moods_pick">Выбрать настроение</button></div>
     </div>
   </div>
 </section>
@@ -661,13 +723,13 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <section class="section reveal no-print" id="board" aria-label="Табло экстренных вылетов">
   <div class="container">
     <div class="board">
-      <span class="kicker" style="background:rgba(255,255,255,.1);border-color:rgba(255,143,190,.4);color:#FF8FBE">🖥 Режим ведущего · /board</span>
+      <span class="kicker" style="background:rgba(255,255,255,.1);border-color:rgba(255,143,190,.4);color:#FF8FBE"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8"/></svg> Режим ведущего · /board</span>
       <h2 class="h-section" style="margin-top:.7rem">Табло экстренных вылетов</h2>
 
       <div class="board-stats">
         <div class="stat"><div class="num" id="flyCounter">0</div><div class="lbl">уже улетели</div></div>
-        <div class="stat"><div class="num" id="onlineCounter">∞</div><div class="lbl">обещаний в воздухе</div></div>
-        <div class="stat"><div class="num">🌅</div><div class="lbl">все рейсы — в закат</div></div>
+        <div class="stat"><div class="num" id="clickCounter">0</div><div class="lbl">нажатий на сайте</div></div>
+        <div class="stat"><div class="num">∞</div><div class="lbl">обещаний в воздухе</div></div>
       </div>
 
       <h3 class="serif" style="color:#FFD6E6;font-size:1.2rem">Статистика по настроениям</h3>
@@ -677,8 +739,8 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       <ul class="feed" id="boardFeed"></ul>
 
       <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.4rem">
-        <button class="btn btn-ghost" id="refreshFeed" style="background:rgba(255,255,255,.1);border-color:rgba(255,143,190,.4);color:#FFEAF3">Обновить ленту 🔄</button>
-        <button class="btn btn-primary" id="pickWinner">Выбрать победителя 👑</button>
+        <button class="btn btn-ghost ripple-host" id="refreshFeed" style="background:rgba(255,255,255,.1);border-color:rgba(255,143,190,.4);color:#FFEAF3">Обновить ленту</button>
+        <button class="btn btn-primary ripple-host shine" id="pickWinner">Выбрать победителя</button>
       </div>
       <div class="winner" id="winnerBox">Победитель ещё не выбран… держись, будет красиво.</div>
       <p class="tiny-note" style="color:rgba(255,214,230,.6);margin-top:1rem">Демо-режим: данные локальные (localStorage). Для real-time табло подключите Supabase/Firebase — см. комментарий в JS.</p>
@@ -691,9 +753,17 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <!-- ================= FOOTER ================= -->
 <footer class="footer no-print">
   <div class="container">
-    <a class="logo" href="#top" style="font-size:1.6rem"><span class="spark">✈</span> ВОГВОЯЖ</a>
+    <a class="logo" href="#top" style="font-size:1.6rem"><span class="spark"><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></span> ВОГВОЯЖ</a>
     <p class="disclaimer" style="margin-top:1rem">Вогвояж — шуточный концепт. Это не настоящая авиакомпания. Мы не продаем билеты и не осуществляем перевозки. Но вдохновляем красиво мечтать. Мы не перевозим пассажиров. Мы перевозим самочувствие.</p>
-    <p class="love">Сделано с любовью к закатам и ненавистью к понедельникам. 💗</p>
+
+    <!-- Реальная статистика взаимодействий: считается локально в localStorage, без бэкенда -->
+    <div class="live-stats" aria-label="Статистика зала">
+      <span class="live-chip"><span class="dot" aria-hidden="true"></span> нажатий: <b id="statClicks">0</b></span>
+      <span class="live-chip"><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.5 12 21 12 21z"/></svg> талонов: <b id="statTickets">0</b></span>
+      <span class="live-chip"><svg class="ic ic-fill" style="color:var(--hot)" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg> броней: <b id="statBooks">0</b></span>
+    </div>
+
+    <p class="love">Сделано с любовью к закатам и ненавистью к понедельникам.</p>
     <div class="links">
       <a href="#tickets">Билеты</a><a href="#tours">Туры</a><a href="#commercial">Ролик</a><a href="#qr">QR-вылет</a><a href="#board">Табло</a>
     </div>
@@ -704,19 +774,19 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <!-- ================= TOAST ================= -->
 <div class="toast no-print" id="toast" role="status" aria-live="polite">
   <span id="toastText"></span>
-  <button class="btn btn-ghost btn-sm" id="toastBtn" hidden></button>
+  <button class="btn btn-ghost btn-sm ripple-host" id="toastBtn" hidden></button>
 </div>
 
 <!-- ================= МОДАЛКА: бронирование заката ================= -->
 <div class="modal-backdrop no-print" id="bookModal" role="dialog" aria-modal="true" aria-labelledby="bookTitle">
   <div class="modal">
-    <button class="modal-close" data-close aria-label="Закрыть">✕</button>
-    <span class="kicker">🌅 Бронь принята</span>
+    <button class="modal-close" data-close aria-label="Закрыть"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg> Бронь принята</span>
     <h3 class="h-section" id="bookTitle" style="font-size:1.8rem;margin-top:.7rem">Ваш закат забронирован.</h3>
     <p class="muted" style="margin-top:.8rem">Оплата принята в формате хорошего настроения. Багаж: 1 сердце, 3 секрета, ручная кладь из ожиданий.</p>
     <div style="margin-top:1.4rem;display:flex;gap:.7rem;flex-wrap:wrap">
-      <button class="btn btn-primary" id="bookToTicket">Показать посадочный талон 🎫</button>
-      <button class="btn btn-ghost" data-close>Вернуться в реальность</button>
+      <button class="btn btn-primary ripple-host shine" id="bookToTicket">Показать посадочный талон</button>
+      <button class="btn btn-ghost ripple-host" data-close>Вернуться в реальность</button>
     </div>
   </div>
 </div>
@@ -724,11 +794,11 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 <!-- ================= МОДАЛКА: QR-ИНТЕРАКТИВ ================= -->
 <div class="modal-backdrop no-print" id="moodModal" role="dialog" aria-modal="true" aria-labelledby="moodTitle">
   <div class="modal modal-wide" id="moodModalInner">
-    <button class="modal-close" data-close aria-label="Закрыть">✕</button>
+    <button class="modal-close" data-close aria-label="Закрыть"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 
     <!-- Шаг 1–2: имя + настроение -->
     <div id="moodStep">
-      <span class="kicker">📱 Экстренный вылет из зала</span>
+      <span class="kicker"><svg class="ic ic-fill" style="width:.9em;height:.9em" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg> Экстренный вылет из зала</span>
       <h3 class="h-section" id="moodTitle" style="font-size:1.7rem;margin-top:.7rem">Не покупай билет. Выбери настроение.</h3>
       <div class="steps" style="margin-top:1.2rem">
         <span class="step-dot active">1 · Имя</span>
@@ -756,10 +826,10 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       <div id="boardingPassBox"><!-- посадочный талон рендерится сюда --></div>
 
       <div class="bp-actions no-print">
-        <button class="btn btn-primary" id="saveTicket">Сохранить талон 🖼</button>
-        <button class="btn btn-ghost" id="printTicket">Распечатать 🖨</button>
-        <button class="btn btn-ghost" id="againTicket">Получить еще один закат 🌅</button>
-        <button class="btn btn-outline" id="sendBoard">Отправить на общее табло 📡</button>
+        <button class="btn btn-primary ripple-host shine" id="saveTicket">Сохранить талон</button>
+        <button class="btn btn-ghost ripple-host" id="printTicket">Распечатать</button>
+        <button class="btn btn-ghost ripple-host" id="againTicket">Получить еще один закат</button>
+        <button class="btn btn-outline ripple-host" id="sendBoard">Отправить на общее табло</button>
       </div>
       <p class="tiny-note" style="margin-top:.8rem">Талон хранится только в вашем браузере. Никакой регистрации, email и оплаты — мы же не настоящая авиакасса.</p>
     </div>
@@ -770,29 +840,46 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 /* ============================================================
    ВОГВОЯЖ — вся логика
    Чистый JS без сборки. Данные никуда не отправляются.
+   Реальная аналитика кликов: localStorage (без бэкенда).
    ============================================================ */
 "use strict";
+
+/* ---------- SVG-иконки (Lucide-style, вместо эмодзи) ---------- */
+const ICONS = {
+  plane:`<svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg>`,
+  sparkle:`<svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5.5 4.5 9 10 10-5.5 1-9 4.5-10 10-1-5.5-4.5-9-10-10 5.5-1 9-4.5 10-10z"/></svg>`,
+  star:`<svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9z"/></svg>`,
+  heart:`<svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.5 12 21 12 21z"/></svg>`,
+  crown:`<svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 4.5 3L12 4l4.5 6L21 7l-1.8 11H4.8z"/></svg>`,
+  moon:`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5z"/></svg>`,
+  mask:`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v6a8 8 0 0 1-16 0z"/><path d="M8.5 10.5h.01M15.5 10.5h.01M9.5 14.5c1.5 1.3 3.5 1.3 5 0"/></svg>`,
+  glass:`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8l-1 7a3.2 3.2 0 0 1-3 3 3.2 3.2 0 0 1-3-3z"/><path d="M12 12v7M8 21h8M6.5 5.5 5 4M17.5 5.5 19 4"/></svg>`,
+  run:`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="14.5" cy="4.5" r="2"/><path d="M15 8.5 11 11l2.5 3-1.5 6"/><path d="M11 11 6.5 12 4 16"/><path d="m13.5 14 4 2 .5 4"/></svg>`,
+  nail:`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 3h5l1 7.5a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 10.5z"/><path d="M12 14v7M9 21h6"/></svg>`,
+  soundOn:`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>`,
+  soundOff:`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="m17 9.5 4 5m0-5-4 5"/></svg>`
+};
 
 /* ---------- Данные интерактива ---------- */
 const MOODS = {
   "Расслабиться": {
-    emoji:"🧘‍♀️",
+    icon:ICONS.moon,
     destinations:["Пудровый терминал","Остров без дедлайнов","Бухта «потом»","Спа-спутник","Плацкарт в хорошее настроение"]
   },
   "Хочу драмы": {
-    emoji:"🎭",
+    icon:ICONS.mask,
     destinations:["Театр заката","Вулкан эмоций","Причал красивых слез","Променад недосказанности","Терминал «я же говорила»"]
   },
   "Девичник": {
-    emoji:"🥂",
+    icon:ICONS.glass,
     destinations:["Девичник в невесомости","Лагуна лайков","Бар «без объяснений»","Остров блеска для губ","Курорт «только для своих»"]
   },
   "Сбежать от понедельника": {
-    emoji:"🏃‍♀️",
+    icon:ICONS.run,
     destinations:["Терминал «сбежать»","Полюс понедельника","Поезд в нормальную жизнь","Аэропорт «не беспокоить»","Улица свободных пятниц"]
   },
   "Быть недоступной": {
-    emoji:"💅",
+    icon:ICONS.nail,
     destinations:["Резиденция «не звоните»","Башня игнора","Люкс «я занята собой»","Терминал offline","Вилла «прочитаю позже»"]
   }
 };
@@ -835,9 +922,10 @@ heroVideo.addEventListener("loadeddata", () => heroFallback.style.display = "non
 setTimeout(checkHeroVideo, 800);
 
 const soundToggle = $("#soundToggle");
+soundToggle.innerHTML = ICONS.soundOff;
 soundToggle.addEventListener("click", () => {
   heroVideo.muted = !heroVideo.muted;
-  soundToggle.textContent = heroVideo.muted ? "🔇" : "🔊";
+  soundToggle.innerHTML = heroVideo.muted ? ICONS.soundOff : ICONS.soundOn;
   soundToggle.setAttribute("aria-label", heroVideo.muted ? "Включить звук ролика" : "Выключить звук ролика");
   if (!heroVideo.muted) heroVideo.play().catch(()=>{});
 });
@@ -861,14 +949,89 @@ function showToast(text, btnLabel, onBtn){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(hideToast, 6000);
 }
+
+/* ---------- Реальная статистика нажатий (localStorage) ----------
+   Считает ВСЕ клики по кнопкам/ссылкам страницы + целевые события (data-track).
+   Без бэкенда: данные настоящие, но локальные для этого браузера.
+   Для кросс-устройств подключите Supabase/Firebase (см. комментарий в initBoard). */
+const STATS_KEY = "vogvoyazh_stats_v1";
+const Stats = {
+  data:{clicks:0, byTarget:{}, tickets:0, books:0, ts:Date.now()},
+  load(){
+    try{ const raw = localStorage.getItem(STATS_KEY); if (raw) this.data = Object.assign(this.data, JSON.parse(raw)); }catch(e){}
+    return this.data;
+  },
+  save(){ try{ localStorage.setItem(STATS_KEY, JSON.stringify(this.data)); }catch(e){} },
+  click(target){
+    this.data.clicks++;
+    this.data.byTarget[target] = (this.data.byTarget[target]||0)+1;
+    this.data.ts = Date.now();
+    this.save(); renderStats();
+  },
+  inc(field){ this.data[field] = (this.data[field]||0)+1; this.save(); renderStats(); }
+};
+Stats.load();
+
+/* Единый слушатель: любой клик по интерактивному элементу — в статистику */
+document.addEventListener("click", e => {
+  const el = e.target.closest("button, a.btn, .mood-btn, [data-track], [data-book], [data-open-mood]");
+  if (!el) return;
+  const target = el.dataset.track
+    || (el.id ? "#"+el.id : "")
+    || (el.dataset.book !== undefined ? "book:"+(el.dataset.tour||"тур") : "")
+    || (el.textContent||"").trim().slice(0,32)
+    || "unknown";
+  Stats.click(target);
+}, true);
+
+/* Плавная анимация чисел при изменении счётчиков */
+function animateNumber(el, to){
+  const from = parseInt(el.textContent,10) || 0;
+  if (from === to){ el.textContent = to; return; }
+  const t0 = performance.now(), dur = 450;
+  (function tick(t){
+    const p = Math.min(1,(t-t0)/dur), eased = 1-Math.pow(1-p,3);
+    el.textContent = Math.round(from + (to-from)*eased);
+    if (p<1) requestAnimationFrame(tick);
+  })(t0);
+}
+function renderStats(){
+  const d = Stats.data;
+  [["#statClicks",d.clicks],["#statTickets",d.tickets||0],["#statBooks",d.books||0],["#clickCounter",d.clicks]]
+    .forEach(([sel,val])=>{ const el=$(sel); if (el) animateNumber(el, val||0); });
+}
 function hideToast(){ toast.classList.remove("show"); }
 
 /* ---------- Фейковый поиск билетов ---------- */
 $("#searchForm").addEventListener("submit", e => {
   e.preventDefault();
-  showToast("Реальных рейсов нет, но ваше желание уехать принято к сведению. 💌",
+  showToast("Реальных рейсов нет, но ваше желание уехать принято к сведению.",
     "Выбрать тур вместо этого",
     () => $("#tours").scrollIntoView({behavior:"smooth"}));
+});
+
+/* ---------- Ripple-волна на кликах (shadcn/ui-паттерн) ---------- */
+document.addEventListener("pointerdown", e => {
+  const host = e.target.closest(".ripple-host");
+  if (!host) return;
+  const r = document.createElement("span");
+  const rect = host.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 1.15;
+  r.className = "ripple" + (host.classList.contains("btn-ghost") || host.classList.contains("btn-outline") ? " ripple-dark" : "");
+  r.style.width = r.style.height = size + "px";
+  r.style.left = (e.clientX - rect.left - size/2) + "px";
+  r.style.top  = (e.clientY - rect.top  - size/2) + "px";
+  host.appendChild(r);
+  r.addEventListener("animationend", () => r.remove());
+});
+
+/* ---------- Glow-блик за курсором на карточках туров ---------- */
+document.querySelectorAll(".tour-card").forEach(card => {
+  card.addEventListener("pointermove", e => {
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty("--mx", ((e.clientX-rect.left)/rect.width*100).toFixed(1)+"%");
+    card.style.setProperty("--my", ((e.clientY-rect.top)/rect.height*100).toFixed(1)+"%");
+  });
 });
 
 /* ---------- Модальные окна ---------- */
@@ -887,7 +1050,7 @@ document.querySelectorAll("[data-open-mood]").forEach(b => b.addEventListener("c
 
 /* ---------- Бронирование заката ---------- */
 document.querySelectorAll("[data-book]").forEach(btn => {
-  btn.addEventListener("click", () => openModal("bookModal"));
+  btn.addEventListener("click", () => { Stats.inc("books"); openModal("bookModal"); });
 });
 $("#bookToTicket").addEventListener("click", () => {
   closeModal($("#bookModal"));
@@ -901,7 +1064,7 @@ const moodGrid = $("#moodGrid");
 Object.entries(MOODS).forEach(([name, m]) => {
   const b = document.createElement("button");
   b.className = "mood-btn"; b.type = "button";
-  b.innerHTML = `<span class="emoji">${m.emoji}</span>${name}`;
+  b.innerHTML = `${m.icon}<span>${name}</span>`;
   b.addEventListener("click", () => generateTicket(name));
   moodGrid.appendChild(b);
 });
@@ -939,11 +1102,11 @@ function esc(s){ return s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"
 function renderTicket(t){
   $("#boardingPassBox").innerHTML = `
   <div class="boarding-pass" id="bpCard">
-    <span class="bp-sparkle" style="top:10px;right:16px">✨</span>
-    <span class="bp-sparkle" style="bottom:64px;left:12px">💗</span>
+    <span class="bp-sparkle" style="top:10px;right:16px">${ICONS.sparkle}</span>
+    <span class="bp-sparkle s2" style="bottom:64px;left:12px">${ICONS.star}</span>
     <div class="bp-top">
       <div class="bp-brand">
-        <span class="airline">✈ ВОГВОЯЖ</span>
+        <span class="airline">${ICONS.plane} ВОГВОЯЖ</span>
         <span style="font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--crimson)">Boarding Mood Pass</span>
       </div>
       <div class="bp-row" style="margin-top:.9rem">
@@ -957,7 +1120,7 @@ function renderTicket(t){
       <div class="bp-name"><small>Пассажир · Настроение: ${esc(t.mood)}</small>${esc(t.name)}</div>
       <div class="bp-route">
         <div class="pt bp-row" style="flex:1"><span>Откуда</span><strong>Зал ожидания реальности</strong></div>
-        <div class="arrow" aria-hidden="true">✈</div>
+        <div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></div>
         <div class="pt bp-row" style="flex:1;text-align:right"><span>Куда</span><strong>${esc(t.dest)}</strong></div>
       </div>
       <div class="bp-grid-3">
@@ -979,6 +1142,7 @@ function renderTicket(t){
 $("#saveTicket").addEventListener("click", async () => {
   const card = $("#bpCard");
   if (!card) return;
+  Stats.inc("tickets");
   try {
     if (typeof html2canvas !== "function") throw new Error("html2canvas недоступен");
     const canvas = await html2canvas(card, {backgroundColor:null, scale:2});
@@ -986,10 +1150,10 @@ $("#saveTicket").addEventListener("click", async () => {
     a.download = "vogvoyazh-boarding-pass.png";
     a.href = canvas.toDataURL("image/png");
     a.click();
-    showToast("Талон сохранён. Красота должна быть при себе. 💅");
+    showToast("Талон сохранён. Красота должна быть при себе.");
   } catch(err) {
     // Fallback: если библиотека не загрузилась (нет сети) — предлагаем печать
-    showToast("Сохранение в картинку недоступно — открываю печать. 🖨");
+    showToast("Сохранение в картинку недоступно — открываю печать.");
     setTimeout(() => window.print(), 900);
   }
 });
@@ -1004,28 +1168,23 @@ $("#againTicket").addEventListener("click", () => {
 });
 
 /* ============================================================
-   ОБЩЕЕ ТАБЛО (mock, localStorage)
-   >>> ДЛЯ REAL-TIME: замените loadFeed/saveFeed на запросы к
-   >>> Supabase (table 'flights', realtime channel) или Firebase
-   >>> (collection 'flights', onSnapshot). См. initSupabaseStub().
+   ОБЩЕЕ ТАБЛО (localStorage — реальные данные этого браузера)
+   >>> ДЛЯ REAL-TIME между устройствами: замените loadFeed/saveFeed
+   >>> на запросы к Supabase (table 'flights', realtime channel)
+   >>> или Firebase (collection 'flights', onSnapshot).
+   >>> См. initSupabaseStub() ниже.
    ============================================================ */
 const LS_KEY = "vogvoyazh_flights";
 let remoteFeed = []; // заполняется из Supabase, если credentials заданы
 
-const DEMO_FEED = [
-  {name:"Марина", dest:"Лагуну лайков", mood:"Девичник"},
-  {name:"Кирилл", dest:"Терминал «сбежать»", mood:"Сбежать от понедельника"},
-  {name:"Соня", dest:"Остров без дедлайнов", mood:"Расслабиться"},
-  {name:"Аня", dest:"Резиденция «не звоните»", mood:"Быть недоступной"}
-];
-
 function loadFeed(){
   try {
     const saved = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-    return [...saved, ...remoteFeed, ...DEMO_FEED];
-  } catch(e){ return DEMO_FEED; }
+    return [...saved, ...remoteFeed];
+  } catch(e){ return remoteFeed; }
 }
 function saveFlight(entry){
+  entry.ts = Date.now(); // реальное время события
   if (supabaseClient) supabaseClient.from("flights").insert([entry]); // real-time путь
   try {
     const saved = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
@@ -1035,7 +1194,7 @@ function saveFlight(entry){
 }
 
 /* ============================================================
-   REAL-TIME ТАБЛО (опционально). По умолчанию — локальный mock.
+   REAL-TIME ТАБЛО (опционально). По умолчанию — локальные данные.
    Чтобы включить общее табло между телефонами в зале:
    1. Создайте проект на supabase.com и таблицу:
       create table flights (id bigint generated always as identity primary key, name text, dest text, mood text, created_at timestamptz default now());
@@ -1062,64 +1221,74 @@ async function initSupabaseStub(){
     .subscribe();
 }
 
+/* Реальное время → «только что / N мин назад» */
+function agoText(ts){
+  if (!ts) return "недавно";
+  const m = Math.floor((Date.now()-ts)/60000);
+  if (m < 1) return "только что";
+  if (m < 60) return m + " мин назад";
+  const h = Math.floor(m/60);
+  if (h < 24) return h + " ч назад";
+  return Math.floor(h/24) + " дн назад";
+}
+
 function feedLine(f){
   const verbs = ["улетела в","улетел в","выбрала","выбрал","летит в","исчезла в"];
-  const v = /[а-яА-ЯёЁ]$/.test(f.name) ? rand(verbs.slice(0,1).concat(verbs.slice(2))) : rand(verbs);
-  return `${esc(f.name)} ${f.verb || rand(verbs)} ${esc(f.dest)}`;
+  const v = f.verb || (/[а-яА-ЯёЁ]$/.test(f.name) ? verbs[0] : rand(verbs));
+  return `${esc(f.name)} ${v} ${esc(f.dest)}${f.ts ? ` <time>${agoText(f.ts)}</time>` : ""}`;
 }
 
 function renderBoard(){
   const feed = loadFeed();
-  $("#flyCounter").textContent = String(feed.length + Math.floor(Math.random()*0));
+  animateNumber($("#flyCounter"), feed.length);
   // Лента: последние 6
-  $("#boardFeed").innerHTML = feed.slice(0,6).map(f => `<li>✈ ${feedLine(f)}</li>`).join("");
-  // Статистика по настроениям
+  $("#boardFeed").innerHTML = feed.slice(0,6).map(f => `<li>${ICONS.plane} ${feedLine(f)}</li>`).join("")
+    || `<li style="opacity:.7">Пока никто не улетел. Станьте первым.</li>`;
+  // Статистика по настроениям (реальные выборы)
   const counts = {};
   Object.keys(MOODS).forEach(m => counts[m] = 0);
   feed.forEach(f => { if (counts[f.mood] !== undefined) counts[f.mood]++; });
   const max = Math.max(1, ...Object.values(counts));
   $("#moodBars").innerHTML = Object.entries(counts).map(([m,c]) => `
     <div class="mood-bar">
-      <span>${MOODS[m].emoji} ${esc(m)}</span>
+      <span>${MOODS[m].icon} ${esc(m)}</span>
       <div class="track"><div class="fill" style="width:${(c/max*100).toFixed(0)}%"></div></div>
       <span>${c}</span>
     </div>`).join("");
 }
 
 $("#refreshFeed").addEventListener("click", () => {
-  // Демо-режим: добавляем фейкового пассажира, чтобы лента «оживала»
+  // Демо-кнопка для ведущего: «оживляет» ленту вымышленным пассажиром.
+  // Все настоящие вылеты попадают на табло через «Отправить на общее табло».
   const names = ["Вика","Лиза","Даша","Рома","Тася","Ника","Женя","Соло"];
   const moods = Object.keys(MOODS);
   const mood = rand(moods);
   const fake = {name: rand(names), dest: rand(MOODS[mood].destinations), mood, verb: Math.random()>0.5?"улетела в":"выбрал"};
-  try {
-    const saved = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-    saved.unshift(fake);
-    localStorage.setItem(LS_KEY, JSON.stringify(saved.slice(0,50)));
-  } catch(e){}
+  saveFlight(fake);
   renderBoard();
-  showToast(`${fake.name} только что улетела в ${fake.dest}. Завидуем молча. 🌅`);
+  showToast(`${fake.name} только что улетела в ${fake.dest}. Завидуем молча.`);
 });
 
 $("#sendBoard").addEventListener("click", () => {
   if (!currentTicket) return;
   saveFlight({name: currentTicket.name === "ГОСТЬ ЗАКАТА" ? "Гость Заката" : capWord(currentTicket.name), dest: currentTicket.dest, mood: currentTicket.mood, verb: "улетела в"});
   renderBoard();
-  showToast("Вы на общем табло! Вас видят все, кто красиво опаздывает. 📡");
+  showToast("Вы на общем табло! Вас видят все, кто красиво опаздывает.");
 });
 function capWord(w){ return w.charAt(0) + w.slice(1).toLowerCase(); }
 
 $("#pickWinner").addEventListener("click", () => {
   const feed = loadFeed();
-  if (!feed.length) return;
+  if (!feed.length){ showToast("Табло пусто — сначала кто-нибудь должен красиво улететь."); return; }
   const w = rand(feed);
   const box = $("#winnerBox");
-  box.innerHTML = `👑 Победитель: <strong>${esc(w.name)}</strong> — рейс в ${esc(w.dest)}. Заберите приз настроением у стойки «не звоните».`;
+  box.innerHTML = `${ICONS.crown} Победитель: <strong>${esc(w.name)}</strong> — рейс в ${esc(w.dest)}. Заберите приз настроением у стойки «не звоните».`;
   box.classList.remove("celebrate"); void box.offsetWidth; box.classList.add("celebrate");
 });
 
 initSupabaseStub();
 renderBoard();
+renderStats();
 
 /* ---------- Hash-роутинг: #qr-interactive / #zal / #board ---------- */
 function handleHash(){
