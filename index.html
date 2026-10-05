@@ -117,20 +117,20 @@ h1,h2,h3,.serif{font-family:var(--serif)}
   will-change:transform;white-space:nowrap;
 }
 .btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--hot)}
-.btn:active{transform:scale(.96)}
+.btn:active{transform:none}
 .btn > *{position:relative;z-index:1}
 .btn-primary{
   background:linear-gradient(120deg,var(--hot),var(--neon));color:#fff;
   box-shadow:var(--shadow-pink);
 }
-.btn-primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 26px 70px -18px rgba(255,46,147,.55)}
+.btn-primary:hover{transform:none;box-shadow:0 26px 70px -18px rgba(255,46,147,.55)}
 .btn-ghost{
   background:var(--glass);border:1.5px solid var(--glass-border);color:var(--ink);
   backdrop-filter:blur(10px);
 }
-.btn-ghost:hover{transform:translateY(-3px);background:rgba(255,214,230,.75)}
+.btn-ghost:hover{transform:none;background:rgba(255,214,230,.75)}
 .btn-outline{border:1.5px solid var(--hot);color:var(--hot);background:transparent}
-.btn-outline:hover{background:var(--hot);color:#fff;transform:translateY(-3px)}
+.btn-outline:hover{background:var(--hot);color:#fff;transform:none;border-color:var(--hot)}
 .btn-sm{height:38px;padding:0 1.15em;font-size:.85rem}
 
 /* ---------- Header ---------- */
@@ -184,7 +184,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
   background:var(--glass);border:1.5px solid var(--glass-border);backdrop-filter:blur(10px);
   box-shadow:var(--shadow-pink);transition:transform .25s;
 }
-.sound-toggle:hover{transform:scale(1.1)}
+.sound-toggle:hover{transform:none;background:rgba(255,214,230,.9)}
 .hero-content{max-width:720px}
 .hero .badge-notreal{
   display:inline-flex;align-items:center;gap:.5em;margin-top:1.6rem;
@@ -227,27 +227,26 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 .field input::placeholder{color:rgba(42,15,29,.4);font-style:italic}
 .search-actions{display:flex;flex-wrap:wrap;align-items:center;gap:1rem}
 
-/* ---------- Туры: крупные полноэкранные карточки ---------- */
-.tours-grid{display:grid;gap:clamp(1.6rem,3vw,2.6rem);grid-template-columns:1fr}
+/* ---------- Туры: крупные, но аккуратные карточки (не на весь экран) ---------- */
+.tours-grid{display:grid;gap:clamp(1.4rem,2.4vw,2.2rem);grid-template-columns:1fr}
+@media(min-width:640px){ .tours-grid{grid-template-columns:repeat(2,1fr)} }
 .tour-card{
   position:relative;border-radius:calc(var(--radius)*1.1);overflow:hidden;
   background:#fff;border:1px solid rgba(255,143,190,.35);
   box-shadow:0 20px 55px -20px rgba(214,35,107,.32);
-  display:flex;flex-direction:column;min-height:82vh;min-height:82svh;
+  display:flex;flex-direction:column;
   transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .35s;
 }
-@media(min-width:980px){
-  /* На десктопе — две колонны во всю ширину экрана, карточки в полный вьюпорт */
-  .tours-grid{grid-template-columns:repeat(2,1fr)}
-  .wide-section .container{width:min(1600px,96%)}
-  .tour-card{min-height:88vh}
+@media(min-width:1080px){
+  /* Три колонны — карточки крупные, но не занимают весь экран */
+  .tours-grid{grid-template-columns:repeat(3,1fr)}
 }
-.tour-card:hover{transform:translateY(-8px) rotate(-.4deg);box-shadow:0 40px 90px -25px rgba(255,46,147,.5)}
+.tour-card:hover{transform:translateY(-6px);box-shadow:0 40px 90px -25px rgba(255,46,147,.5)}
 /* Блик на карточке при наведении (shadcn-style glow) */
 .tour-card::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .4s;
   background:radial-gradient(560px circle at var(--mx,50%) var(--my,0%),rgba(255,95,193,.18),transparent 65%)}
 .tour-card:hover::after{opacity:1}
-.tour-visual{flex:1;min-height:320px;position:relative;display:grid;place-items:center;color:rgba(255,255,255,.92)}
+.tour-visual{height:clamp(200px,26vh,280px);position:relative;display:grid;place-items:center;color:rgba(255,255,255,.92)}
 .tour-visual .ic{width:clamp(64px,9vw,110px);height:clamp(64px,9vw,110px);stroke-width:1.2;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
 .tour-card:hover .tour-visual .ic{transform:scale(1.18) rotate(-6deg)}
 .tour-visual::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 20% 0%,rgba(255,255,255,.35),transparent 60%)}
@@ -328,7 +327,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 }
 @keyframes pop{from{transform:translateY(30px) scale(.96);opacity:0}to{transform:none;opacity:1}}
 .modal-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:var(--powder);color:var(--ink);font-size:1.1rem;font-weight:800;transition:transform .2s}
-.modal-close:hover{transform:rotate(90deg) scale(1.05)}
+.modal-close:hover{transform:rotate(90deg);color:var(--hot)}
 .modal-wide{max-width:640px}
 
 /* ---------- Интерактив (шаги) ---------- */
@@ -343,9 +342,9 @@ h1,h2,h3,.serif{font-family:var(--serif)}
   display:flex;align-items:center;gap:.7em;transition:transform .25s cubic-bezier(.34,1.56,.64,1), border-color .25s, background .25s, box-shadow .25s;
   position:relative;
 }
-.mood-btn:hover{border-color:var(--hot);background:var(--powder);transform:translateX(4px);box-shadow:0 10px 28px -12px rgba(255,46,147,.4)}
+.mood-btn:hover{border-color:var(--hot);background:var(--powder);transform:none;box-shadow:0 10px 28px -12px rgba(255,46,147,.4)}
 .mood-btn:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--hot)}
-.mood-btn:active{transform:scale(.97)}
+.mood-btn:active{transform:none}
 .mood-btn .ic{width:22px;height:22px;color:var(--hot)}
 /* Появление кнопок настроения по очереди */
 .mood-btn{animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
@@ -422,7 +421,7 @@ h1,h2,h3,.serif{font-family:var(--serif)}
 @keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-1.5deg)}75%{transform:rotate(1.5deg)}}
 
 /* ============================================================
-   ОТДЕЛЬНЫЕ СТРАНИЦЫ (qr.html / interactive.html / board.html)
+   ОТДЕЛЬНЫЕ СТРАНИЦЫ (interactive.html / board.html / admin.html)
    Общий каркас + полноэкранный интерактив + TV-табло ведущего
    ============================================================ */
 .page-shell{max-width:none}
@@ -548,6 +547,9 @@ h1,h2,h3,.serif{font-family:var(--serif)}
   #boardingPassBox{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;box-shadow:none !important}
   .no-print{display:none !important}
 }
+
+/* Скрытые админкой блоки (наследуется от hidden-атрибута) */
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -766,14 +768,14 @@ h1,h2,h3,.serif{font-family:var(--serif)}
           <button class="btn btn-primary ripple-host shine" data-open-mood data-track="qr_open">Открыть интерактив без QR</button>
           <!-- Ссылки на отдельные страницы (для GitHub Pages — относительно) -->
           <a class="btn btn-ghost ripple-host" href="interactive.html" data-track="qr_page_interactive">Страница интерактива</a>
-          <a class="btn btn-outline ripple-host" href="qr.html" data-track="qr_page_gen">Сгенерировать QR</a>
+          <a class="btn btn-outline ripple-host" href="board.html" data-track="qr_page_board">Табло ведущего</a>
         </div>
-        <p class="tiny-note" style="margin-top:.8rem">Для ведущих: отдельная страница интерактива — <code>interactive.html</code>, генератор QR — <code>qr.html</code>, табло для большого экрана — <code>board.html</code>.</p>
+        <p class="tiny-note" style="margin-top:.8rem">Для ведущих: отдельная страница интерактива — <code>interactive.html</code>, табло для большого экрана — <code>board.html</code>. Настоящий QR можно сгенерировать любым бесплатным генератором по ссылке <code>…/interactive.html</code>.</p>
       </div>
 
       <div class="qr-stage">
         <!-- ЗАМЕНИТЬ: поставьте реальный QR — <img src="/assets/qr-vogvoyazh.svg" alt="QR-код Вогвояж">
-             или сгенерируйте настоящий QR на своей ссылке на странице qr.html -->
+             или вставьте ссылку на интерактив (…/interactive.html) в любой бесплатный генератор QR -->
         <div class="qr-frame" role="img" aria-label="QR-код (placeholder) для ссылки на интерактив">
           <svg viewBox="0 0 25 25" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
             <rect width="25" height="25" fill="#ffffff"/>
@@ -841,11 +843,10 @@ h1,h2,h3,.serif{font-family:var(--serif)}
       <ul class="feed" id="boardFeed"></ul>
 
       <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.4rem">
-        <button class="btn btn-ghost ripple-host" id="refreshFeed" style="background:rgba(255,255,255,.1);border-color:rgba(255,143,190,.4);color:#FFEAF3">Обновить ленту</button>
         <button class="btn btn-primary ripple-host shine" id="pickWinner">Выбрать победителя</button>
       </div>
       <div class="winner" id="winnerBox">Победитель ещё не выбран… держись, будет красиво.</div>
-      <p class="tiny-note" style="color:rgba(255,214,230,.6);margin-top:1rem">Демо-режим: данные локальные (localStorage). Для real-time табло подключите Supabase/Firebase — см. комментарий в JS.</p>
+      <p class="tiny-note" style="color:rgba(255,214,230,.6);margin-top:1rem">На табло — только реальные пассажиры, отправившие талон кнопкой «Отправить на общее табло». Управление залом: <a href="admin.html" style="color:#FF8FBE;text-decoration:underline;text-underline-offset:.2em">админка</a>. Для real-time между устройствами подключите Supabase/Firebase — см. комментарий в JS.</p>
     </div>
   </div>
 </section>
@@ -1278,6 +1279,11 @@ $("#againTicket").addEventListener("click", () => {
    ============================================================ */
 const LS_KEY = "vogvoyazh_flights";
 let remoteFeed = []; // заполняется из Supabase, если credentials заданы
+/* ADMIN_LS_KEY и getAdminSettings() — в shared.js: настройки админки (admin.html) */
+function applyBoardVisibility(){
+  const el = document.getElementById("board");
+  if (el) el.hidden = getAdminSettings().boardHidden === true;
+}
 
 function loadFeed(){
   try {
@@ -1291,7 +1297,7 @@ function saveFlight(entry){
   try {
     const saved = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
     saved.unshift(entry);
-    localStorage.setItem(LS_KEY, JSON.stringify(saved.slice(0, 50)));
+    localStorage.setItem(LS_KEY, JSON.stringify(saved.slice(0, 200)));
   } catch(e){ /* приватный режим — игнорируем */ }
 }
 
@@ -1341,6 +1347,8 @@ function feedLine(f){
 }
 
 function renderBoard(){
+  applyBoardVisibility();
+  if (getAdminSettings().boardHidden) return; // табло скрыто администратором
   const feed = loadFeed();
   animateNumber($("#flyCounter"), feed.length);
   // Лента: последние 6
@@ -1358,18 +1366,6 @@ function renderBoard(){
       <span>${c}</span>
     </div>`).join("");
 }
-
-$("#refreshFeed").addEventListener("click", () => {
-  // Демо-кнопка для ведущего: «оживляет» ленту вымышленным пассажиром.
-  // Все настоящие вылеты попадают на табло через «Отправить на общее табло».
-  const names = ["Вика","Лиза","Даша","Рома","Тася","Ника","Женя","Соло"];
-  const moods = Object.keys(MOODS);
-  const mood = rand(moods);
-  const fake = {name: rand(names), dest: rand(MOODS[mood].destinations), mood, verb: Math.random()>0.5?"улетела в":"выбрал"};
-  saveFlight(fake);
-  renderBoard();
-  showToast(`${fake.name} только что улетела в ${fake.dest}. Завидуем молча.`);
-});
 
 $("#sendBoard").addEventListener("click", () => {
   if (!currentTicket) return;
@@ -1396,10 +1392,13 @@ renderStats();
 window.addEventListener("storage", e => {
   if (e.key === STATS_KEY){ Stats.load(); renderStats(); }
   if (e.key === LS_KEY){ renderBoard(); }
+  if (e.key === ADMIN_LS_KEY){ renderBoard(); }
 });
+/* Автообновление: время «N мин назад» и синхронизация с интерактивом/табло */
+setInterval(renderBoard, 30000);
 
 /* ---------- Hash-роутинг: #qr-interactive / #zal / #mood → интерактив ----------
-   Отдельные страницы: interactive.html (интерактив), qr.html (генератор QR),
+   Отдельные страницы: interactive.html (интерактив), admin.html (админка),
    board.html (табло для большого экрана). Ссылки вида #... оставлены для совместимости. */
 function handleHash(){
   const h = location.hash;

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Табло ведущего — ВОГВОЯЖ</title>
-<meta name="description" content="Live-табло Вогвояж для большого экрана: статистика зала, лента вылетов, голоса настроений и розыгрыш билета в закат.">
+<meta name="description" content="Live-табло Вогвояж для большого экрана: статистика зала, лента реальных вылетов, голоса настроений и розыгрыш билета в закат.">
 <meta name="theme-color" content="#2A0F1D">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,6 +97,7 @@ body.board-page::before{display:none}
   <span class="clock" id="clock">--:--:--</span>
   <div style="display:flex;gap:.7rem;flex-wrap:wrap">
     <button class="btn btn-ghost btn-sm ripple-host" id="fsBtn">Во весь экран</button>
+    <a class="btn btn-outline btn-sm ripple-host" href="admin.html">Админка</a>
     <a class="btn btn-outline btn-sm ripple-host" href="index.html">На главную</a>
   </div>
 </header>
@@ -113,15 +114,16 @@ body.board-page::before{display:none}
         <div class="big-stat"><div class="num" id="statBooks">0</div><div class="lbl">броней туров</div></div>
         <div class="big-stat"><div class="num" id="statGuests">0</div><div class="lbl">вылетевших</div></div>
       </div>
-      <p class="tiny-note" style="margin-top:1rem">Цифры обновляются автоматически. Источник — реальные клики и талоны этого браузера/зала.</p>
+      <p class="tiny-note" style="margin-top:1rem">Только реальные данные этого браузера/зала: клики по сайту и пассажиры, отправившие талон на табло. Ничего не пропадает при обновлении страницы.</p>
     </section>
 
     <section class="board-card" aria-label="Как включить табло">
       <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg> Подсказка ведущему</h2>
       <ul style="list-style:none;display:grid;gap:.6rem;font-size:clamp(.85rem,1.2vw,1.05rem)">
-        <li>• Нажмите «Во весь экран» — табель помещается на TV целиком.</li>
+        <li>• Нажмите «Во весь экран» — табло помещается на TV целиком.</li>
         <li>• Гости сканируют QR → <a href="interactive.html" style="color:#FF8FBE">interactive.html</a>, жмут «На общее табло».</li>
-        <li>• «Розыгрыш билета» выбирает победителя из вылетевших.</li>
+        <li>• «Розыгрыш билета» выбирает победителя из реально вылетевших.</li>
+        <li>• Сброс ленты и скрытие табло — только через <a href="admin.html" style="color:#FF8FBE">админку</a>.</li>
       </ul>
       <div class="qr-mini" style="margin-top:1rem">
         <canvas id="miniQr" aria-label="QR на страницу интерактива"></canvas>
@@ -151,8 +153,8 @@ body.board-page::before{display:none}
       <div class="winner" id="winnerBox">Победитель ещё не выбран. Зал ждёт магии.</div>
       <div class="board-actions">
         <button class="btn btn-primary ripple-host shine" id="pickWinner">Розыгрыш билета</button>
-        <button class="btn btn-ghost ripple-host" id="resetAll">Сбросить данные зала</button>
       </div>
+      <p class="tiny-note" style="margin-top:.9rem">Сброс данных зала — в <a href="admin.html" style="color:#FF8FBE">админке</a>. Просто обновление страницы ничего не удаляет.</p>
     </section>
   </div>
 
@@ -164,6 +166,15 @@ body.board-page::before{display:none}
 <script src="shared.js"></script>
 <script>
 "use strict";
+
+/* ============================================================
+   ТАБЛО: только настоящие пользователи.
+   Данные живут в localStorage и НЕ пропадают при обновлении
+   страницы. Удалить их может только администратор (admin.html).
+   >>> Для real-time между устройствами подключите Supabase/Firebase
+   >>> (см. комментарий initSupabase в index.html) — сюда же
+   >>> добавится чтение таблицы 'flights' вместо loadFeed().
+   ============================================================ */
 
 /* ---------- Часы для зала ---------- */
 const clockEl = $("#clock");
@@ -224,7 +235,7 @@ function renderBoardPage(){
     bars.appendChild(row);
   });
 
-  /* Победитель из сохранённого розыгрыша */
+  /* Победитель из сохранённого розыгрыша (переживает перезагрузку) */
   if (lastWinnerTs){
     try {
       const w = JSON.parse(localStorage.getItem("vogvoyazh_last_winner") || "null");
@@ -233,7 +244,7 @@ function renderBoardPage(){
   }
 }
 
-/* ---------- Розыгрыш победителя ---------- */
+/* ---------- Розыгрыш победителя (из реальных пассажиров) ---------- */
 $("#pickWinner").addEventListener("click", () => {
   const feed = loadFeed();
   const box = $("#winnerBox");
@@ -251,21 +262,10 @@ $("#pickWinner").addEventListener("click", () => {
   } catch(e){}
 });
 
-/* ---------- Сброс данных зала ---------- */
-$("#resetAll").addEventListener("click", () => {
-  try {
-    localStorage.removeItem(LS_KEY);
-    localStorage.removeItem(STATS_KEY);
-    localStorage.removeItem("vogvoyazh_last_winner");
-    localStorage.removeItem("vogvoyazh_last_winner_ts");
-  } catch(e){}
-  Stats.data = {clicks:0, byTarget:{}, tickets:0, books:0, ts:Date.now()};
-  $("#winnerBox").textContent = "Победитель ещё не выбран. Зал ждёт магии.";
-  renderBoardPage(); renderStats();
-  showToast("Данные зала сброшены. Чистый лист и чистый закат.");
-});
-
-/* ---------- Живое обновление: свой интервал + storage от вкладок гостей ---------- */
+/* ---------- Живое обновление: свой интервал + storage от вкладок гостей ----------
+   Никаких фейковых «демо-пассажиров»: лента растёт только когда реальный
+   гость нажимает «Отправить на общее табло». Обновление страницы ничего
+   не сбрасывает — источник правды лежит в localStorage. */
 renderBoardPage();
 renderStats();
 setInterval(renderBoardPage, 3000);

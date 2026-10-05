@@ -206,6 +206,11 @@ function renderTicket(t){
 
 /* ---------- Общее табло (localStorage; real-time путь — Supabase, см. index.html) ---------- */
 const LS_KEY = "vogvoyazh_flights";
+const ADMIN_LS_KEY = "vogvoyazh_admin_v1"; // настройки администратора (см. admin.html)
+function getAdminSettings(){
+  try { return Object.assign({boardHidden:false}, JSON.parse(localStorage.getItem(ADMIN_LS_KEY) || "{}")); }
+  catch(e){ return {boardHidden:false}; }
+}
 
 function loadFeed(){
   try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch(e){ return []; }
@@ -215,7 +220,7 @@ function saveFlight(entry){
   try {
     const saved = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
     saved.unshift(entry);
-    localStorage.setItem(LS_KEY, JSON.stringify(saved.slice(0, 50)));
+    localStorage.setItem(LS_KEY, JSON.stringify(saved.slice(0, 200))); // лента живёт долго: чистит только админка
   } catch(e){ /* приватный режим */ }
 }
 function agoText(ts){
