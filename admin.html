@@ -105,9 +105,9 @@ body.admin-page::before{display:none}
   <div id="panel" hidden>
     <header class="admin-head">
       <span class="logo"><span class="spark" style="color:var(--neon)"><svg class="ic ic-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 15.6 14 9.5V4.8a1.3 1.3 0 0 0-2.6 0v4.7l-7.5 6.1-.9 2.9 7-2.1v3.9l-2 1.4v1.3l3.3-.9 3.3.9v-1.3l-2-1.4v-3.9l7 2.1z"/></svg></span> ВОГВОЯЖ · админка</span>
-      <a class="btn btn-outline btn-sm ripple-host" href="board.html">Табло</a>
-      <a class="btn btn-outline btn-sm ripple-host" href="interactive.html">Интерактив</a>
-      <a class="btn btn-ghost btn-sm ripple-host" href="index.html">Главная</a>
+      <a class="btn btn-outline btn-sm ripple-host" href="board">Табло</a>
+      <a class="btn btn-outline btn-sm ripple-host" href="interactive">Интерактив</a>
+      <a class="btn btn-ghost btn-sm ripple-host" href="index">Главная</a>
     </header>
 
     <div class="admin-grid">
@@ -148,9 +148,9 @@ body.admin-page::before{display:none}
 
         <h2 style="margin-top:1.4rem"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7L12.5 19.5"/></svg> Ссылки зала</h2>
         <div class="link-list">
-          <a href="interactive.html" id="linkInteractive"></a>
-          <a href="board.html" id="linkBoard"></a>
-          <a href="admin.html" id="linkAdmin"></a>
+          <a href="interactive" id="linkInteractive"></a>
+          <a href="board" id="linkBoard"></a>
+          <a href="admin" id="linkAdmin"></a>
         </div>
         <p class="tiny-note" style="margin-top:.9rem;color:rgba(255,214,230,.6)">Совет: сделайте QR из ссылки интерактива любым бесплатным генератором и распечатайте для зала.</p>
       </section>
@@ -237,9 +237,11 @@ function renderAdmin(){
   boardToggle.checked = !getSettings().boardHidden;
 
   /* Абсолютные ссылки для QR/распечатки */
-  document.getElementById("linkInteractive").textContent = new URL("interactive.html", location.href).href;
-  document.getElementById("linkBoard").textContent = new URL("board.html", location.href).href;
-  document.getElementById("linkAdmin").textContent = new URL("admin.html", location.href).href;
+  const base = location.pathname.replace(/\/[^/]*$/, ""); // базовая папка проекта (.../vogvoyazh)
+  const clean = p => location.origin + base + "/" + p;      // чистые URL без .html
+  document.getElementById("linkInteractive").textContent = clean("interactive");
+  document.getElementById("linkBoard").textContent = clean("board");
+  document.getElementById("linkAdmin").textContent = clean("admin");
 }
 function writeFeed(feed){ try { localStorage.setItem(LS_KEY, JSON.stringify(feed)); } catch(e){} }
 function removeAt(i){

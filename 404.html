@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Страница не найдена — ВОГВОЯЖ</title>
+<meta name="robots" content="noindex">
+<!--
+  GitHub Pages: этот файл перенаправляет ЧИСТЫЕ URL (/board, /interactive, /admin)
+  на соответствующие .html-страницы, сохраняя hash и query.
+  Работает при доступе по адресу https://artikyare.github.io/vogvoyazh/board
+  (404 от Pages -> редирект -> нужная страница).
+-->
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{display:grid;place-items:center;min-height:100vh;background:#FFF6F8;color:#2A0F1D;font-family:Manrope,system-ui,sans-serif;margin:0}
+  .card{background:rgba(255,255,255,.7);backdrop-filter:blur(14px);border:1px solid #FFD6E6;border-radius:24px;padding:2.5rem 2.8rem;text-align:center;box-shadow:0 20px 60px rgba(255,46,147,.15)}
+  h1{font-family:"Playfair Display",serif;font-size:clamp(1.6rem,4vw,2.4rem);margin:0 0 .6rem}
+  p{color:#7a5566;margin:0 0 1.4rem}
+  a.btn{display:inline-block;background:linear-gradient(135deg,#FF2E93,#FF8FBE);color:#fff;text-decoration:none;padding:.8rem 1.6rem;border-radius:999px;font-weight:700}
+  .spin{width:44px;height:44px;margin:0 auto 1rem;border-radius:50%;border:3px solid #FFD6E6;border-top-color:#FF2E93;animation:rot 1s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="spin" aria-hidden="true"></div>
+  <h1>Такого рейса нет</h1>
+  <p id="msg">Перенаправляем туда, где красиво…</p>
+  <a class="btn" href="index">На главную</a>
+</main>
+<script>
+(function () {
+  // Карта чистых URL -> файлы. При необходимости дополните.
+  var ROUTES = { "": "index", index: "index", board: "board", interactive: "interactive", admin: "admin" };
+
+  function cleanSeg(p) {
+    // "/vogvoyazh/board/" или "/board" -> "board"
+    var seg = p.replace(/\/+$/, "").split("/").pop() || "";
+    return decodeURIComponent(seg).toLowerCase().replace(/\.html$/, "");
+  }
+
+  // Базовая папка проекта берётся из пути самого 404.html (GitHub Pages отдаёт его для любого несуществующего пути в /vogvoyazh/*)
+  var base = location.pathname.replace(/\/[^/]*$/, ""); // .../vogvoyazh
+  var tail = location.pathname.slice(base.length).replace(/^\/+/, "");
+  var key = cleanSeg("/" + tail);
+
+  if (ROUTES.hasOwnProperty(key)) {
+    var target = base + "/" + ROUTES[key] + ".html" + location.search + location.hash;
+    document.getElementById("msg").textContent = "Ищем ваш посадочный талон…";
+    setTimeout(function () { location.replace(target); }, 350);
+  } else {
+    document.getElementById("msg").textContent = "Возможно, вы опоздали на собственный рейс.";
+  }
+})();
+</script>
+</body>
+</html>

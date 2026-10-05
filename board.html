@@ -97,11 +97,12 @@ body.board-page::before{display:none}
   <span class="clock" id="clock">--:--:--</span>
   <div style="display:flex;gap:.7rem;flex-wrap:wrap">
     <button class="btn btn-ghost btn-sm ripple-host" id="fsBtn">Во весь экран</button>
-    <a class="btn btn-outline btn-sm ripple-host" href="admin.html">Админка</a>
-    <a class="btn btn-outline btn-sm ripple-host" href="index.html">На главную</a>
+    <a class="btn btn-outline btn-sm ripple-host" href="admin">Админка</a>
+    <a class="btn btn-outline btn-sm ripple-host" href="index">На главную</a>
   </div>
 </header>
 
+<div id="boardPage">
 <main class="board-main">
 
   <!-- Колонна 1: статистика зала -->
@@ -121,13 +122,13 @@ body.board-page::before{display:none}
       <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg> Подсказка ведущему</h2>
       <ul style="list-style:none;display:grid;gap:.6rem;font-size:clamp(.85rem,1.2vw,1.05rem)">
         <li>• Нажмите «Во весь экран» — табло помещается на TV целиком.</li>
-        <li>• Гости сканируют QR → <a href="interactive.html" style="color:#FF8FBE">interactive.html</a>, жмут «На общее табло».</li>
+        <li>• Гости сканируют QR → <a href="interactive" style="color:#FF8FBE">/interactive</a>, жмут «На общее табло».</li>
         <li>• «Розыгрыш билета» выбирает победителя из реально вылетевших.</li>
-        <li>• Сброс ленты и скрытие табло — только через <a href="admin.html" style="color:#FF8FBE">админку</a>.</li>
+        <li>• Сброс ленты и скрытие табло — только через <a href="admin" style="color:#FF8FBE">админку</a>.</li>
       </ul>
       <div class="qr-mini" style="margin-top:1rem">
         <canvas id="miniQr" aria-label="QR на страницу интерактива"></canvas>
-        <span class="tiny-note">QR ведёт гостей<br>на <a href="interactive.html">interactive.html</a></span>
+        <span class="tiny-note">QR ведёт гостей<br>на <a href="interactive">/interactive</a></span>
       </div>
     </section>
   </div>
@@ -154,11 +155,12 @@ body.board-page::before{display:none}
       <div class="board-actions">
         <button class="btn btn-primary ripple-host shine" id="pickWinner">Розыгрыш билета</button>
       </div>
-      <p class="tiny-note" style="margin-top:.9rem">Сброс данных зала — в <a href="admin.html" style="color:#FF8FBE">админке</a>. Просто обновление страницы ничего не удаляет.</p>
+      <p class="tiny-note" style="margin-top:.9rem">Сброс данных зала — в <a href="admin" style="color:#FF8FBE">админке</a>. Просто обновление страницы ничего не удаляет.</p>
     </section>
   </div>
 
 </main>
+</div>
 
 <div class="toast no-print" id="toast" role="status" aria-live="polite"><span id="toastText"></span></div>
 
@@ -189,11 +191,17 @@ $("#fsBtn").addEventListener("click", () => {
   else { document.exitFullscreen?.(); }
 });
 
+/* Чистый URL интерактива (без .html): берём базовую папку из пути текущей страницы */
+function interactiveURL(){
+  const base = location.pathname.replace(/\/[^/]*$/, ""); // .../vogvoyazh
+  return location.origin + base + "/interactive";
+}
+
 /* ---------- Мини-QR на интерактив прямо на табло ---------- */
 (function miniQR(){
   const c = $("#miniQr");
   if (typeof QRCode !== "undefined" && QRCode.toCanvas){
-    QRCode.toCanvas(c, new URL("interactive.html", location.href).href,
+    QRCode.toCanvas(c, interactiveURL(),
       { width: 132, margin: 2, color:{ dark:"#2A0F1D", light:"#FFF6F8" } }, ()=>{});
   }
 })();
@@ -203,6 +211,7 @@ let lastWinnerTs = 0;
 try { lastWinnerTs = parseInt(localStorage.getItem("vogvoyazh_last_winner_ts") || "0", 10); } catch(e){}
 
 function renderBoardPage(){
+  applyBoardVisibility(); // если админ скрыл табло — страница уходит в «закрыто»
   const feed = loadFeed();
 
   /* Лента */

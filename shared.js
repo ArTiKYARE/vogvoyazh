@@ -107,16 +107,21 @@ function renderStats(){
     .forEach(([sel,val])=>{ const el=$(sel); if (el) animateNumber(el, val||0); });
 }
 
-/* ---------- Тост ---------- */
+/* ---------- Тост (единый для всех страниц: текст + опциональная кнопка) ---------- */
 let toastTimer;
-function showToast(text){
-  const toast = $("#toast"), tt = $("#toastText");
+function showToast(text, btnLabel, onBtn){
+  const toast = $("#toast"), tt = $("#toastText"), tb = $("#toastBtn");
   if (!toast) return;
   tt.textContent = text;
+  if (tb){
+    if (btnLabel){ tb.hidden = false; tb.textContent = btnLabel; tb.onclick = () => { hideToast(); if (onBtn) onBtn(); }; }
+    else { tb.hidden = true; tb.onclick = null; }
+  }
   toast.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 6000);
+  toastTimer = setTimeout(hideToast, 6000);
 }
+function hideToast(){ const t = $("#toast"); if (t) t.classList.remove("show"); }
 
 /* ---------- Ripple-волна (shadcn/ui-паттерн) ---------- */
 document.addEventListener("pointerdown", e => {
@@ -212,11 +217,34 @@ function getAdminSettings(){
   catch(e){ return {boardHidden:false}; }
 }
 
+/* Реальный real-time путь (опционально): Supabase.
+   1. Создайте таблицу:
+      create table flights (id bigint generated always as identity primary key, name text, dest text, mood text, created_at timestamptz default now());
+   2. Впишите SUPABASE_URL / SUPABASE_KEY ниже — табло и статистика станут общими между устройствами зала. */
+const SUPABASE_URL = "";   // >>> ЗАМЕНИТЬ: "https://xxxx.supabase.co"
+const SUPABASE_KEY = "";   // >>> ЗАМЕНИТЬ: anon-key
+let supabaseClient = null;
+let remoteFeed = [];       // записи из Supabase (если подключен)
+
+/* Скрытие секции/страницы табло по решению администратора */
+function applyBoardVisibility(){
+  const hidden = getAdminSettings().boardHidden === true;
+  ["board", "boardPage"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = hidden;
+  });
+  // ссылки на табло в навигации тоже прячем
+  document.querySelectorAll('a[href*="board"]').forEach(a => a.style.display = hidden ? "none" : "");
+}
+
 function loadFeed(){
-  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch(e){ return []; }
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch(e){}
+  return [...local, ...remoteFeed];
 }
 function saveFlight(entry){
   entry.ts = Date.now();
+  if (supabaseClient) supabaseClient.from("flights").insert([entry]); // real-time запись на сервер
   try {
     const saved = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
     saved.unshift(entry);
@@ -236,4 +264,23 @@ function feedLine(f){
   const verbs = ["улетела в","улетел в","выбрала","выбрал","летит в","исчезла в"];
   const v = f.verb || (/[а-яА-ЯёЁ]$/.test(f.name) ? verbs[0] : rand(verbs));
   return `${esc(f.name)} ${v} ${esc(f.dest)}${f.ts ? ` <time>${agoText(f.ts)}</time>` : ""}`;
+}
+
+/* Инициализация Supabase-канала (вызывается со страниц index/board/admin). */
+async function initSupabase(onUpdate){
+  if (!SUPABASE_URL || !SUPABASE_KEY || typeof window.supabase === "undefined") return;
+  try {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const {data} = await supabaseClient.from("flights").select("*").order("created_at",{ascending:false}).limit(50);
+    if (data && data.length){
+      remoteFeed = data.map(r => ({name:r.name, dest:r.dest, mood:r.mood, verb:"улетела в", ts: new Date(r.created_at).getTime()}));
+      if (onUpdate) onUpdate();
+    }
+    supabaseClient.channel("flights-realtime")
+      .on("postgres_changes", {event:"INSERT", schema:"public", table:"flights"}, p => {
+        remoteFeed.unshift({name:p.new.name, dest:p.new.dest, mood:p.new.mood, verb:"улетела в", ts:Date.now()});
+        if (onUpdate) onUpdate();
+      })
+      .subscribe();
+  } catch(e){ /* остаёмся на локальных данных */ }
 }
